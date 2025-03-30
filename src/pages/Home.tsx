@@ -40,7 +40,6 @@ const features = [
 
 const Home = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
@@ -163,7 +162,7 @@ const Home = () => {
       </Box>
 
       {/* Features Section */}
-      <Box sx={{ bgcolor: '#000000', py: { xs: 12, md: 20 } }}>
+      <Box sx={{ bgcolor: '#000000', py: { xs: 8, md: 16 } }}>
         <Container maxWidth="lg">
           <Typography
             variant="h2"
@@ -171,9 +170,9 @@ const Home = () => {
             align="center"
             gutterBottom
             sx={{ 
-              mb: 12,
+              mb: 8,
               fontWeight: 600,
-              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              fontSize: { xs: '2.5rem', md: '3rem' },
               color: 'white',
               background: 'linear-gradient(90deg, #ffffff 0%, #e0e0e0 100%)',
               WebkitBackgroundClip: 'text',
