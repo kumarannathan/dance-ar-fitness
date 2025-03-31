@@ -5,7 +5,6 @@ import {
   Container,
   Typography,
   Button,
-  useTheme,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
