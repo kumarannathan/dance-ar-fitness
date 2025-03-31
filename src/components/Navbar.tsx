@@ -4,72 +4,148 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Button,
   Box,
   IconButton,
   useTheme,
   useMediaQuery,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import CreateIcon from '@mui/icons-material/Create';
-import PersonIcon from '@mui/icons-material/Person';
 
 const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const menuItems = [
+    { text: 'home', path: '/' },
+    { text: 'workout', path: '/workout' },
+    { text: 'create', path: '/create' },
+    { text: 'profile', path: '/profile' },
+    { text: 'blog', path: '/blog' },
+  ];
+
+  const drawer = (
+    <List sx={{ bgcolor: 'background.default', height: '100%' }}>
+      {menuItems.map((item) => (
+        <ListItem
+          key={item.text}
+          component={RouterLink}
+          to={item.path}
+          onClick={handleDrawerToggle}
+          sx={{
+            cursor: 'pointer',
+            color: 'text.primary',
+            textDecoration: 'none',
+            '&:hover': {
+              color: 'text.secondary',
+            },
+          }}
+        >
+          <ListItemText 
+            primary={item.text}
+            primaryTypographyProps={{
+              sx: {
+                fontSize: '1rem',
+                fontWeight: 400,
+                letterSpacing: '-0.01em',
+              }
+            }}
+          />
+        </ListItem>
+      ))}
+    </List>
+  );
 
   return (
-    <AppBar position="static" sx={{ background: 'transparent', boxShadow: 'none' }}>
-      <Toolbar>
+    <AppBar 
+      position="static" 
+      sx={{ 
+        bgcolor: 'background.default',
+        boxShadow: 'none',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        py: 2,
+      }}
+    >
+      <Toolbar sx={{ justifyContent: 'space-between' }}>
         <Typography
-          variant="h6"
           component={RouterLink}
           to="/"
           sx={{
-            flexGrow: 1,
             textDecoration: 'none',
-            color: 'primary.main',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
+            color: 'text.primary',
+            fontSize: '1rem',
+            fontWeight: 400,
+            letterSpacing: '-0.01em',
+            '&:hover': {
+              color: 'text.secondary',
+            },
           }}
         >
-          <FitnessCenterIcon />
-          DanceAR
+          dance ar
         </Typography>
 
         {isMobile ? (
-          <IconButton color="inherit" aria-label="menu">
-            <MenuIcon />
-          </IconButton>
+          <>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="end"
+              onClick={handleDrawerToggle}
+              sx={{
+                '&:hover': {
+                  color: 'text.secondary',
+                },
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Drawer
+              variant="temporary"
+              anchor="right"
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              ModalProps={{
+                keepMounted: true,
+              }}
+              PaperProps={{
+                sx: {
+                  bgcolor: 'background.default',
+                  width: 240,
+                }
+              }}
+            >
+              {drawer}
+            </Drawer>
+          </>
         ) : (
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              component={RouterLink}
-              to="/workout"
-              color="inherit"
-              startIcon={<FitnessCenterIcon />}
-            >
-              Workout
-            </Button>
-            <Button
-              component={RouterLink}
-              to="/create"
-              color="inherit"
-              startIcon={<CreateIcon />}
-            >
-              Create Dance
-            </Button>
-            <Button
-              component={RouterLink}
-              to="/profile"
-              color="inherit"
-              startIcon={<PersonIcon />}
-            >
-              Profile
-            </Button>
+          <Box sx={{ display: 'flex', gap: 4 }}>
+            {menuItems.map((item) => (
+              <Typography
+                key={item.text}
+                component={RouterLink}
+                to={item.path}
+                sx={{
+                  color: 'text.primary',
+                  textDecoration: 'none',
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  letterSpacing: '-0.01em',
+                  '&:hover': {
+                    color: 'text.secondary',
+                  },
+                }}
+              >
+                {item.text}
+              </Typography>
+            ))}
           </Box>
         )}
       </Toolbar>
