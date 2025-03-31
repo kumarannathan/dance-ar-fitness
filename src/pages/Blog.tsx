@@ -6,6 +6,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Link,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { motion } from 'framer-motion';
@@ -611,7 +612,7 @@ const Blog = () => {
                     letterSpacing: '-0.02em',
                   }}
                 >
-                  initial tracking test
+                  screen space joint visualizer
                 </Typography>
                 <Box
                   sx={{
@@ -622,7 +623,7 @@ const Blog = () => {
                 >
                   <Box
                     component="video"
-                    src="/tracking.mp4"
+                    src="/dancear-demo-visualizer-compressed.mov"
                     autoPlay
                     loop
                     muted
@@ -631,9 +632,29 @@ const Blog = () => {
                       display: 'block',
                       width: '100%',
                       height: 'auto',
+                      mb: 2
                     }}
                   />
                 </Box>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '1rem',
+                    letterSpacing: '-0.01em',
+                    maxWidth: '600px',
+                    mb: 2,
+                  }}
+                >
+                  we used Unity and ImGui to display joint values to modify a joint visualizer to
+                  show information about each joint's number and position, which will be useful for
+                  creating gestures and dances moves. the&nbsp;
+                  <Link href='https://github.com/Unity-Technologies/arfoundation-samples/blob/main/Assets/Scripts/Runtime/ScreenSpaceJointVisualizer.cs' underline='always'>
+                    original visualizer from Unity
+                  </Link>
+                  &nbsp;did not include anything to visualize the joints, which is why this feature
+                  was added to the visualizer.
+                </Typography>
               </Box>
               <Box>
                 <Typography
@@ -644,7 +665,7 @@ const Blog = () => {
                     letterSpacing: '-0.02em',
                   }}
                 >
-                  improved tracking
+                  gesture detection
                 </Typography>
                 <Box
                   sx={{
@@ -655,7 +676,7 @@ const Blog = () => {
                 >
                   <Box
                     component="video"
-                    src="/tracking2.mp4"
+                    src="/dancear-demo-action-compressed.mov"
                     autoPlay
                     loop
                     muted
@@ -663,79 +684,30 @@ const Blog = () => {
                     sx={{
                       display: 'block',
                       width: '100%',
-                      height: 'auto'
+                      height: 'auto',
+                      mb: 2
                     }}
                   />
                 </Box>
-              </Box>
-            </Box>
-            <Typography
-              variant="body1"
-              sx={{
-                color: 'text.secondary',
-                fontSize: '1rem',
-                letterSpacing: '-0.01em',
-                maxWidth: '600px',
-              }}
-            >
-              the videos demonstrate the evolution of our pose tracking system, from initial implementation to improved accuracy and responsiveness.
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion
-          expanded={expanded === 'unity-integration'}
-          onChange={handleChange('unity-integration')}
-          sx={{ mb: 2, bgcolor: 'transparent', boxShadow: 'none' }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            sx={{
-              '& .MuiAccordionSummary-content': {
-                margin: '0',
-                padding: '0',
-              },
-            }}
-          >
-            <Typography
-              variant="h3"
-              sx={{
-                fontSize: { xs: '1.5rem', md: '2rem' },
-                letterSpacing: '-0.02em',
-              }}
-            >
-              unity integration
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 0, pl: 4 }}>
-            <Box
-              component="ul"
-              sx={{
-                listStyle: 'none',
-                p: 0,
-                m: 0,
-                display: 'grid',
-                gap: 2,
-              }}
-            >
-              {[
-                'set up unity webgl build configuration for web deployment',
-                'established communication bridge between react and unity',
-                'implemented basic pose data transfer system',
-                'optimized loading and performance for web environment',
-              ].map((item, index) => (
-                <Box
-                  component="li"
-                  key={index}
+                <Typography
+                  variant="body1"
                   sx={{
                     color: 'text.secondary',
                     fontSize: '1rem',
                     letterSpacing: '-0.01em',
+                    maxWidth: '600px',
+                    mb: 2,
                   }}
                 >
-                  {item}
-                </Box>
-              ))}
+                  we also implemented gesture detection, which will be useful for our users since they
+                  will not be able to see or interact with the phone screen while they use the app, but
+                  will likely still need to perform actions. to ensure reusability, we used C# events to
+                  allow any component to listen to an event by referencing the gesture manager and adding
+                  a delegate to the event. to avoid inadvertent actions, we also wait a fixed interval
+                  before calling the event, allowing the user to stop performing a gesture if necessary.
+                  this video shows a debug screen that shows when the action gets triggered.
+                </Typography>
+              </Box>
             </Box>
           </AccordionDetails>
         </Accordion>
@@ -765,17 +737,35 @@ const Blog = () => {
             </Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0, pl: 4 }}>
-            <Typography
-              variant="body1"
+            <Box
+              component="ul"
               sx={{
-                color: 'text.secondary',
-                fontSize: '1rem',
-                letterSpacing: '-0.01em',
-                maxWidth: '600px',
+                listStyle: 'none',
+                p: 0,
+                m: 0,
+                display: 'grid',
+                gap: 2,
               }}
             >
-              planning to enhance the unity-web integration with more robust data synchronization and add interactive dance tutorials to the product page.
-            </Typography>
+              {[
+                'start implementing a frontend site synced to the device that shows instructions to the user',
+                'establish communication bridge between react and unity',
+                'implement basic pose detection for dance moves',
+                'optimize loading and performance for web environment',
+              ].map((item, index) => (
+                <Box
+                  component="li"
+                  key={index}
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '1rem',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {item}
+                </Box>
+              ))}
+            </Box>
           </AccordionDetails>
         </Accordion>
 
