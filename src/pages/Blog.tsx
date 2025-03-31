@@ -273,6 +273,153 @@ const Blog = () => {
         </Accordion>
 
         <Accordion
+          expanded={expanded === 'financial-sustainability'}
+          onChange={handleChange('financial-sustainability')}
+          sx={{ mb: 2, bgcolor: 'transparent', boxShadow: 'none' }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            sx={{
+              '& .MuiAccordionSummary-content': {
+                margin: '0',
+                padding: '0',
+              },
+            }}
+          >
+            <Typography
+              variant="h3"
+              sx={{
+                fontSize: { xs: '1.5rem', md: '2rem' },
+                letterSpacing: '-0.02em',
+              }}
+            >
+              financial sustainability
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0, pl: 4 }}>
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                fontSize: '1rem',
+                letterSpacing: '-0.01em',
+                maxWidth: '600px',
+                mb: 4,
+              }}
+            >
+              Exploring sustainable monetization strategies through targeted advertising and user engagement:
+            </Typography>
+            <Box
+              component="ul"
+              sx={{
+                listStyle: 'none',
+                p: 0,
+                m: 0,
+                display: 'grid',
+                gap: 4,
+                mb: 8,
+              }}
+            >
+              <Box component="li">
+                <Typography
+                  variant="h4"
+                  sx={{
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  Contextual Advertising
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '1rem',
+                    letterSpacing: '-0.01em',
+                    maxWidth: '600px',
+                  }}
+                >
+                  Integrating non-intrusive fitness and wellness-related advertisements during natural breaks in the workout experience. This could include promoting fitness equipment, healthy meal plans, or wellness apps that align with our users' interests.
+                </Typography>
+              </Box>
+
+              <Box component="li">
+                <Typography
+                  variant="h4"
+                  sx={{
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  Sponsored Content
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '1rem',
+                    letterSpacing: '-0.01em',
+                    maxWidth: '600px',
+                  }}
+                >
+                  Collaborating with fitness influencers and brands to create sponsored dance routines and workout challenges. This approach maintains user engagement while providing value through professional content.
+                </Typography>
+              </Box>
+
+              <Box component="li">
+                <Typography
+                  variant="h4"
+                  sx={{
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  Premium Features
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '1rem',
+                    letterSpacing: '-0.01em',
+                    maxWidth: '600px',
+                  }}
+                >
+                  Offering an ad-free experience with additional features like custom dance routines, advanced analytics, and exclusive content through a premium subscription model.
+                </Typography>
+              </Box>
+
+              <Box component="li">
+                <Typography
+                  variant="h4"
+                  sx={{
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  User Experience Balance
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '1rem',
+                    letterSpacing: '-0.01em',
+                    maxWidth: '600px',
+                  }}
+                >
+                  Maintaining a careful balance between monetization and user experience by implementing non-disruptive ad placements and ensuring that sponsored content adds value to the workout experience rather than detracting from it.
+                </Typography>
+              </Box>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion
           expanded={expanded === 'product-management'}
           onChange={handleChange('product-management')}
           sx={{ mb: 2, bgcolor: 'transparent', boxShadow: 'none' }}
