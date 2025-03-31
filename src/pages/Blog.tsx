@@ -180,10 +180,7 @@ const Blog = () => {
                     maxWidth: '600px',
                   }}
                 >
-                  - Uses ARKit for real-time pose tracking
-                  - Captures user's movements and pose data
-                  - Sends pose data via WebSocket connection
-                  - Primary device for user interaction and movement
+                  Our AR device, running on iOS, utilizes ARKit for real-time pose tracking, capturing user movements and pose data. It serves as the primary device for user interaction and movement, transmitting pose data via WebSocket connection to enable seamless communication with the web interface.
                 </Typography>
               </Box>
 
@@ -207,10 +204,7 @@ const Blog = () => {
                     maxWidth: '600px',
                   }}
                 >
-                  - Hosts our website interface
-                  - Receives real-time pose data from AR device
-                  - Displays dance moves that need to be performed
-                  - Shows real-time feedback and scoring
+                  The web device hosts our website interface, receiving real-time pose data from the AR device. It displays dance moves that need to be performed and provides real-time feedback and scoring to guide users through their workout sessions.
                 </Typography>
               </Box>
 
@@ -234,11 +228,7 @@ const Blog = () => {
                     maxWidth: '600px',
                   }}
                 >
-                  - ARKit captures pose data on iOS device
-                  - Unity script processes and transmits data via WebSocket
-                  - Website receives and processes pose data
-                  - System calculates pose matching score
-                  - Real-time feedback displayed on web interface
+                  The system's data flow begins with ARKit capturing pose data on the iOS device. This data is then processed and transmitted via WebSocket through our Unity script. The website receives and processes this data, calculating pose matching scores and displaying real-time feedback on the web interface.
                 </Typography>
               </Box>
 
@@ -262,11 +252,7 @@ const Blog = () => {
                     maxWidth: '600px',
                   }}
                 >
-                  - ARKit for iOS pose tracking
-                  - Unity for AR development and WebSocket communication
-                  - Web interface for displaying moves and feedback
-                  - Pose matching algorithm for scoring
-                  - WebSocket server for real-time data transfer
+                  Our system integrates several key components: ARKit for iOS pose tracking, Unity for AR development and WebSocket communication, a web interface for displaying moves and feedback, a pose matching algorithm for scoring, and a WebSocket server for real-time data transfer.
                 </Typography>
               </Box>
             </Box>
