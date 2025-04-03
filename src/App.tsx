@@ -8,6 +8,7 @@ import Workout from './pages/Workout';
 import CreateDance from './pages/CreateDance';
 import Profile from './pages/Profile';
 import Blog from './pages/Blog';
+import PoseTracking from './pages/debug/PoseTracking';
 
 const theme = createTheme({
   palette: {
@@ -90,6 +91,7 @@ function App() {
             <Route path="/create" element={<CreateDance />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/debug/pose-tracking" element={<PoseTracking />} />
           </Routes>
         </div>
       </Router>
