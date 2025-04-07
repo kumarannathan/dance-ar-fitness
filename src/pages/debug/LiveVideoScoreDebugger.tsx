@@ -114,7 +114,7 @@ const LiveVideoScoreDebugger = () => {
       camVideoTime = time;
       cameraLandmarker.detectForVideo(camVideoRef.current, time, (result) => {
         if (result.landmarks.length === 0) return;
-        if (videoTime >= time + 2) return;
+        if (camVideoTime >= time + 2) return;
         const landmark = result.landmarks[0];
         if (camCanvasRef.current) {
           const canvasCtx = camCanvasRef.current.getContext('2d');
@@ -215,7 +215,7 @@ const LiveVideoScoreDebugger = () => {
       {loading ? (
         <>
           <Typography variant="h4" gutterBottom>
-            live video score debugger
+            live video score debugger (pls use chrome thx)
           </Typography>
           <Typography>
             this test will play a video file next to live video of the camera and compare the scores.
