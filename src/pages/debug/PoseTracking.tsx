@@ -30,6 +30,7 @@ const PoseTracking = () => {
       videoTime = time;
       landmarker.detectForVideo(videoRef.current, time, (result) => {
         if (result.landmarks.length === 0) return;
+        if (videoTime >= time + 2) return;
         const landmark = result.landmarks[0];
         if (canvasRef.current) {
           const canvasCtx = canvasRef.current.getContext('2d');

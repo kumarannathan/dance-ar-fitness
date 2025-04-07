@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Blog from './pages/Blog';
 import PoseTracking from './pages/debug/PoseTracking';
 import VideoPoseTracking from './pages/debug/VideoPoseTracking';
+import LiveVideoScoreDebugger from './pages/debug/LiveVideoScoreDebugger';
 
 const theme = createTheme({
   palette: {
@@ -94,6 +95,7 @@ function App() {
             <Route path="/blog" element={<Blog />} />
             <Route path="/debug/pose-tracking" element={<PoseTracking />} />
             <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
+            <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
           </Routes>
         </div>
       </Router>

@@ -40,6 +40,19 @@ export enum BodyLandmarkType {
   RightFootIndex = 32
 };
 
+export interface ScoringPoseData {
+  // The BodyLandmarkType to be starting from
+  a: number;
+  // The root BodyLandmarkType
+  b: number;
+  // The end BodyLandmarkType
+  c: number;
+  // The targeted angle
+  y: number;
+  // The importance of this angle in the calculation
+  i: number;
+};
+
 export const getConnectedLandmarks = (landmark: number, detectedLandmarks: Landmark[]) => {
   return PoseLandmarker.POSE_CONNECTIONS
     .filter((x, i) => (x.start === landmark || x.end === landmark))
@@ -56,3 +69,21 @@ export const getLandmarkAngle = (target: Landmark, start: Landmark, end: Landmar
   const c = getEuclideanDistance(end, start);
   return getAngleFromDistances(a, b, c);
 };
+
+export const gradePose = (userPose: Landmark[], targets: ScoringPoseData[]) => {
+  // const importanceSum = targets.map(x => x.i).reduce((sum, i) => sum + i);
+  let overallScore = 0;
+  for (const target of targets) {
+    const angle = getLandmarkAngle(
+      userPose[target.b],
+      userPose[target.a],
+      userPose[target.c]
+    );
+    // dividing by Math.PI ensures that our score is between zero and one since
+    // getLandmarkAngle returns the angle in radians and the max angle is PI
+    let score = 1 - (Math.abs(angle - target.y) / Math.PI);
+    overallScore += score * target.i;
+  }
+  // overallScore /= importanceSum;
+  return overallScore;
+}

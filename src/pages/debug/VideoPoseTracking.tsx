@@ -12,8 +12,8 @@ const VideoPoseTracking = () => {
   const [handsUp, setHandsUp] = useState(true);
   const [elbowAngle, setElbowAngle] = useState(0);
 
-  const [videoFile, setVideoFile] = useState<File|null>(null);
-  const [localVideoUrl, setLocalVideoUrl] = useState<string|null>(null);
+  // const [videoFile, setVideoFile] = useState<File|null>(null);
+  // const [localVideoUrl, setLocalVideoUrl] = useState<string|null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -38,8 +38,9 @@ const VideoPoseTracking = () => {
         window.requestAnimationFrame(processVideo);
         return;
       }
-      videoFrame++;
-      landmarker.detectForVideo(videoRef.current, videoFrame, (result) => {
+      let nextFrame = videoFrame++;
+      videoTime = time;
+      landmarker.detectForVideo(videoRef.current, nextFrame, (result) => {
         if (result.landmarks.length === 0) return;
         const landmark = result.landmarks[0];
         if (canvasRef.current) {
@@ -110,8 +111,8 @@ const VideoPoseTracking = () => {
       setLoading(false);
     };
 
-    setVideoFile(videoFile);
-    setLocalVideoUrl(URL.createObjectURL(videoFile));
+    // setVideoFile(videoFile);
+    // setLocalVideoUrl(URL.createObjectURL(videoFile));
     loadPoseTracking();
   };
 
@@ -138,7 +139,7 @@ const VideoPoseTracking = () => {
         <div style={{
           position: 'relative'
         }} hidden={loading}>
-          <video ref={videoRef} width={"100%"} autoPlay playsInline controls />
+          <video ref={videoRef} width={"100%"} autoPlay playsInline />
           <canvas ref={canvasRef} height={videoRef.current?.clientHeight} width={videoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0}}></canvas>
         </div>
       </Box>
