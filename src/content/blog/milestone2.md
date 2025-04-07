@@ -1,6 +1,6 @@
 ---
 title: "Milestone 2: Pose Detection & Scoring Implementation"
-date: "2024-03-31"
+date: "2024-04-6"
 category: "Development"
 description: "Implementing real-time pose detection and scoring system for dance moves"
 ---
