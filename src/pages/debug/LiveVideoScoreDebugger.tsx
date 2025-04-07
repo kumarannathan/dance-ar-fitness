@@ -76,6 +76,7 @@ const LiveVideoScoreDebugger = () => {
       landmarker.detectForVideo(videoRef.current, nextFrame, (result) => {
         if (result.landmarks.length === 0) return;
         const landmark = result.landmarks[0];
+        /*
         if (canvasRef.current) {
           const canvasCtx = canvasRef.current.getContext('2d');
           if (canvasCtx) {
@@ -92,6 +93,7 @@ const LiveVideoScoreDebugger = () => {
             canvasCtx.restore();
           }
         }
+          */
         
 
         for (let target of targets) {
