@@ -12,17 +12,10 @@ const blogPosts: BlogPost[] = [
   {
     slug: 'milestone1',
     title: 'Milestone 1: Frontend & Unity Setup',
-    date: '2024-03-30',
+    date: '2025-03-30',
     category: 'Development',
     description: 'Establishing the product landing page, Unity framework, and project roadmap',
-    content: `---
-title: "Milestone 1: Frontend & Unity Setup"
-date: "2024-03-30"
-category: "Development"
-description: "Establishing the product landing page, Unity framework, and project roadmap"
----
-
-# Milestone 1: Frontend & Unity Setup
+    content: `# Milestone 1: Frontend & Unity Setup
 
 ## Project Roadmap & Overview
 
@@ -94,17 +87,10 @@ For Milestone 2, we plan to:
   {
     slug: 'milestone2',
     title: 'Milestone 2: Pose Detection & Scoring Implementation',
-    date: '2024-03-31',
+    date: '2025-04-07',
     category: 'Development',
     description: 'Implementing real-time pose detection, scoring system, and user authentication',
-    content: `---
-title: "Milestone 2: Pose Detection & Scoring Implementation"
-date: "2024-04-6"
-category: "Development"
-description: "Implementing real-time pose detection and scoring system for dance moves"
----
-
-# Milestone 2: Pose Detection & Scoring Implementation
+    content: `# Milestone 2: Pose Detection & Scoring Implementation
 
 [Read our playtesting report (requires UM Google login)](https://drive.google.com/file/d/1C02T5ZAjwalWe8X44gsov40EnNh_p1Ro/view?usp=sharing)
 
