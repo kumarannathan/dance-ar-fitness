@@ -205,7 +205,7 @@ const Blog = () => {
             <AccordionDetails sx={{ p: 0, pl: 4 }}>
               <Box
                 sx={{
-                  color: 'text.secondary',
+                  color: 'text.primary',
                   fontSize: '1rem',
                   letterSpacing: '-0.01em',
                   maxWidth: '800px',

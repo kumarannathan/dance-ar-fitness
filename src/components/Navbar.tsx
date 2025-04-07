@@ -18,10 +18,10 @@ import {
   Avatar,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { useUser } from '../contexts/UserContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+import { BugReport } from '@mui/icons-material';
 
 const Navbar = () => {
   const theme = useTheme();
@@ -63,7 +63,7 @@ const Navbar = () => {
 
   const menuItems = [
     { text: 'Home', path: '/' },
-    { text: 'blog', path: '/blog' },
+    { text: 'Blog', path: '/blog' },
     ...(user ? [
       { text: 'Workout', path: '/workout' },
       { text: 'Create Dance', path: '/create' },
@@ -117,7 +117,7 @@ const Navbar = () => {
         }}
       >
         <ListItemText 
-          primary="Tools"
+          primary="Debug"
           primaryTypographyProps={{
             sx: {
               fontSize: '0.875rem',
@@ -184,7 +184,7 @@ const Navbar = () => {
             },
           }}
         >
-          dance ar
+          DanceAR
         </Typography>
 
         {isMobile ? (
@@ -242,7 +242,7 @@ const Navbar = () => {
               </Typography>
             ))}
             <Button
-              startIcon={<FitnessCenterIcon />}
+              startIcon={<BugReport />}
               onClick={handleToolsClick}
               sx={{
                 color: 'text.primary',
@@ -255,7 +255,7 @@ const Navbar = () => {
                 },
               }}
             >
-              Tools
+              Debug
             </Button>
             <Menu
               anchorEl={toolsAnchorEl}
