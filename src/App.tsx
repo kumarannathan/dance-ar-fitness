@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Navbar from './components/Navbar';
@@ -8,11 +8,15 @@ import Workout from './pages/Workout';
 import CreateDance from './pages/CreateDance';
 import Profile from './pages/Profile';
 import Blog from './pages/Blog';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import PoseTracking from './pages/debug/PoseTracking';
 import VideoPoseTracking from './pages/debug/VideoPoseTracking';
 import LiveVideoScoreDebugger from './pages/debug/LiveVideoScoreDebugger';
 import GradeDebugger from './pages/debug/GradeDebugger';
 import ImagePoseTracking from './pages/debug/ImagePoseTracking';
+import BetaDanceBattle from './pages/BetaDanceBattle';
+import { UserProvider, useUser } from './contexts/UserContext';
 
 const theme = createTheme({
   palette: {
@@ -82,27 +86,42 @@ const theme = createTheme({
   },
 });
 
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useUser();
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  return user ? <>{children}</> : <Navigate to="/login" />;
+};
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <div className="App">
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/workout" element={<Workout />} />
-            <Route path="/create" element={<CreateDance />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/debug/pose-tracking" element={<PoseTracking />} />
-            <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
-            <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />
-            <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
-            <Route path="/debug/grade-debugger" element={<GradeDebugger />} />
-          </Routes>
-        </div>
-      </Router>
+      <UserProvider>
+        <Router>
+          <div className="App">
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/workout" element={<PrivateRoute><Workout /></PrivateRoute>} />
+              <Route path="/create" element={<PrivateRoute><CreateDance /></PrivateRoute>} />
+              <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/beta" element={<PrivateRoute><BetaDanceBattle /></PrivateRoute>} />
+              <Route path="/debug/pose-tracking" element={<PoseTracking />} />
+              <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
+              <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />
+              <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
+              <Route path="/debug/grade-debugger" element={<GradeDebugger />} />
+            </Routes>
+          </div>
+        </Router>
+      </UserProvider>
     </ThemeProvider>
   );
 }
