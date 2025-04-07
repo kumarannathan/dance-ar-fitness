@@ -239,16 +239,43 @@ const LiveVideoScoreDebugger = () => {
         </>
       )}
       <div style={{
-        position: 'relative',
-        transform: 'scale(-1, 1)'
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        backgroundColor: '#000000',
+        margin: '10px',
+        zIndex: 2
       }} hidden={loading}>
-        <video ref={videoRef} width={"100%"} playsInline />
-        <canvas ref={canvasRef} height={videoRef.current?.clientHeight} width={videoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0}}></canvas>
+        <Typography variant="h1" style={{color: getColorForScore(currentScore)}}>
+          {Math.round(currentScore)}
+        </Typography>
       </div>
       <div style={{
         position: 'absolute',
+        transform: 'scale(-1, 1)',
         top: '0px',
         left: '0px',
+        bottom: '0px',
+        right: '0px',
+        textAlign: 'center',
+        backgroundColor: '#000000'
+      }} hidden={loading}>
+        <video ref={videoRef} height={"100%"} playsInline />
+        <canvas
+          ref={canvasRef}
+          height={videoRef.current?.clientHeight}
+          width={videoRef.current?.clientWidth}
+          style={{
+            position: 'absolute',
+            left: '0px',
+            right: '0px',
+            margin: '0 auto'
+          }}></canvas>
+      </div>
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        left: '20px',
         maxWidth: '200px'
       }}>
         <video ref={camVideoRef} width={"100%"} playsInline style={{transform: 'scale(-1, 1)'}} />
