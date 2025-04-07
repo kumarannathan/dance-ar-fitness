@@ -12,6 +12,7 @@ import PoseTracking from './pages/debug/PoseTracking';
 import VideoPoseTracking from './pages/debug/VideoPoseTracking';
 import LiveVideoScoreDebugger from './pages/debug/LiveVideoScoreDebugger';
 import GradeDebugger from './pages/debug/GradeDebugger';
+import ImagePoseTracking from './pages/debug/ImagePoseTracking';
 
 const theme = createTheme({
   palette: {
@@ -96,6 +97,7 @@ function App() {
             <Route path="/blog" element={<Blog />} />
             <Route path="/debug/pose-tracking" element={<PoseTracking />} />
             <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
+            <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />
             <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
             <Route path="/debug/grade-debugger" element={<GradeDebugger />} />
           </Routes>

@@ -76,7 +76,7 @@ const LiveVideoScoreDebugger = () => {
       landmarker.detectForVideo(videoRef.current, nextFrame, (result) => {
         if (result.landmarks.length === 0) return;
         const landmark = result.landmarks[0];
-        /*
+        
         if (canvasRef.current) {
           const canvasCtx = canvasRef.current.getContext('2d');
           if (canvasCtx) {
@@ -85,17 +85,15 @@ const LiveVideoScoreDebugger = () => {
             canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
             drawingUtils.drawLandmarks(landmark, {
               radius: (data) => DrawingUtils.lerp(data.from!.z, -0.15, 0.1, 5, 1),
-              color: '#ff00ff'
+              color: '#00ff00'
             });
             drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
-              color: '#ff00ff'
+              color: '#00ff00'
             });
             canvasCtx.restore();
           }
         }
-          */
         
-
         for (let target of targets) {
           target.y = getLandmarkAngle(landmark[target.b], landmark[target.a], landmark[target.c]);
         }
@@ -143,8 +141,10 @@ const LiveVideoScoreDebugger = () => {
   }, [videoRef, canvasRef, landmarker, cameraLandmarker, loading]);
 
   const getColorForScore = (score: number) => {
-    if (score >= 400) {
+    if (score >= 450) {
       return '#ff00ff';
+    } else if (score >= 400) {
+      return '#00ff00';
     } else if (score >= 350) {
       return '#ffff00';
     } else if (score >= 250) {
