@@ -64,6 +64,7 @@ const Navbar = () => {
   const menuItems = [
     { text: 'Home', path: '/' },
     { text: 'Blog', path: '/blog' },
+    { text: 'Pricing', path: '/pricing' },
     ...(user ? [
       { text: 'Workout', path: '/workout' },
       { text: 'Create Dance', path: '/create' },

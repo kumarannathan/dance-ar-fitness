@@ -17,6 +17,7 @@ import GradeDebugger from './pages/debug/GradeDebugger';
 import ImagePoseTracking from './pages/debug/ImagePoseTracking';
 import BetaDanceBattle from './pages/BetaDanceBattle';
 import { UserProvider, useUser } from './contexts/UserContext';
+import PricingOverview from './pages/PricingPanel';
 
 const theme = createTheme({
   palette: {
@@ -108,6 +109,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path='/pricing' element={<PricingOverview />} />
               <Route path="/workout" element={<PrivateRoute><Workout /></PrivateRoute>} />
               <Route path="/create" element={<PrivateRoute><CreateDance /></PrivateRoute>} />
               <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

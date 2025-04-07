@@ -12,6 +12,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { BlogPost, loadBlogPosts } from '../utils/markdownLoader';
+import rehypeRaw from 'rehype-raw';
 
 // interface BlogPost {
 //   title: string;
@@ -212,7 +213,10 @@ const Blog = () => {
                   mb: 4,
                 }}
               >
-                <ReactMarkdown>{post.content}</ReactMarkdown>
+                {/* do not allow user content in here, raw html is allowed */}
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                  {post.content}
+                </ReactMarkdown>
               </Box>
             </AccordionDetails>
           </Accordion>

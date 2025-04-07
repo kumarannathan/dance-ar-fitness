@@ -42,9 +42,17 @@ Created an intuitive navigation system with React Router, featuring smooth trans
 ## Unity Framework
 
 ### Screen Space Joint Visualizer
+<video height="600" controls>
+  <source src="dancear-demo-visualizer-compressed.mov" type="video/mp4">
+</video>
+
 We used Unity and ImGui to display joint values to modify a joint visualizer to show information about each joint's number and position, which will be useful for creating gestures and dance moves. The original visualizer from Unity did not include anything to visualize the joints, which is why this feature was added to the visualizer.
 
 ### Gesture Detection
+<video height="600" controls>
+  <source src="dancear-demo-action-compressed.mov" type="video/mp4">
+</video>
+
 We also implemented gesture detection, which will be useful for our users since they will not be able to see or interact with the phone screen while they use the app, but will likely still need to perform actions. To ensure reusability, we used C# events to allow any component to listen to an event by referencing the gesture manager and adding a delegate to the event. To avoid inadvertent actions, we also wait a fixed interval before calling the event, allowing the user to stop performing a gesture if necessary.
 
 ## Project Management
@@ -64,4 +72,4 @@ For Milestone 2, we plan to:
 1. Start implementing a frontend site synced to the device that shows instructions to the user
 2. Establish communication bridge between React and Unity
 3. Implement basic pose detection for dance moves
-4. Optimize loading and performance for web environment 
+4. Optimize loading and performance for web environment
