@@ -213,10 +213,12 @@ const Blog = () => {
                   mb: 4,
                 }}
               >
-                {/* do not allow user content in here, raw html is allowed */}
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                  {post.content}
-                </ReactMarkdown>
+                <div className="react-markdown">
+                  {/* do not allow user content in here, raw html is allowed */}
+                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                    {post.content}
+                  </ReactMarkdown>
+                </div>
               </Box>
             </AccordionDetails>
           </Accordion>

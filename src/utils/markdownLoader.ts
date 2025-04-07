@@ -124,7 +124,7 @@ MediaPipe's pose detection can work with both live video input (such as from a w
 
 ### Pose Visualizer
 
-![](pose-tracking.png)
+<img src="pose-tracking.png" height="600" />
 
 The first step we worked on was a Pose Visualizer tool that helped us verify that MediaPipe works well on the web and helped us validate two utility functions:
 

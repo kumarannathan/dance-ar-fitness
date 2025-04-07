@@ -18,6 +18,7 @@ import ImagePoseTracking from './pages/debug/ImagePoseTracking';
 import BetaDanceBattle from './pages/BetaDanceBattle';
 import { UserProvider, useUser } from './contexts/UserContext';
 import PricingOverview from './pages/PricingPanel';
+import './App.css';
 
 const theme = createTheme({
   palette: {
