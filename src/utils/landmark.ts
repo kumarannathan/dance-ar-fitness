@@ -40,6 +40,42 @@ export enum BodyLandmarkType {
   RightFootIndex = 32
 };
 
+export const BODY_LANDMARK_NAMES: string[] = [
+  "Nose",
+  "Left Eye (Inner)",
+  "Left Eye",
+  "Left Eye (Outer)",
+  "Right Eye (Inner)",
+  "Right Eye",
+  "Right Eye (Outer)",
+  "Left Ear",
+  "Right Ear",
+  "Mouth (Left)",
+  "Mouth (Right)",
+  "Left Shoulder",
+  "Right Shoulder",
+  "Left Elbow",
+  "Right Elbow",
+  "Left Wrist",
+  "Right Wrist",
+  "Left Pinky",
+  "Right Pinky",
+  "Left Index",
+  "Right Index",
+  "Left Thumb",
+  "Right Thumb",
+  "Left Hip",
+  "Right Hip",
+  "Left Knee",
+  "Right Knee",
+  "Left Ankle",
+  "Right Ankle",
+  "Left Heel",
+  "Right Heel",
+  "Left Foot Index",
+  "Right Foot Index"
+];
+
 export interface ScoringPoseData {
   // The BodyLandmarkType to be starting from
   a: number;
@@ -55,12 +91,17 @@ export interface ScoringPoseData {
 
 export const getConnectedLandmarks = (landmark: number, detectedLandmarks: Landmark[]) => {
   return PoseLandmarker.POSE_CONNECTIONS
-    .filter((x, i) => (x.start === landmark || x.end === landmark))
+    .filter((x) => (x.start === landmark || x.end === landmark))
     .map(x => x.start === landmark ? x.end : x.start);
 };
 
 export const isLandmarkEligibleForAngles = (landmark: number, detectedLandmarks: Landmark[]) => {
   return getConnectedLandmarks(landmark, detectedLandmarks).length >= 2;
+};
+
+export const getLandmarkEligibleConnections = () => {
+  return PoseLandmarker.POSE_CONNECTIONS
+    .filter((x) => isLandmarkEligibleForAngles(x.start, []) || isLandmarkEligibleForAngles(x.end, []));
 };
 
 export const getLandmarkAngle = (target: Landmark, start: Landmark, end: Landmark) => {
