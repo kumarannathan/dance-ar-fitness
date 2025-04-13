@@ -49,7 +49,7 @@ const DanceGrid: React.FC<DanceGridProps> = ({ dances, onDelete }) => {
   };
 
   const handleDanceClick = (danceId: string) => {
-    navigate(`/dance/${danceId}`);
+    navigate(`/dance/play/${danceId}`);
   };
 
   return (
