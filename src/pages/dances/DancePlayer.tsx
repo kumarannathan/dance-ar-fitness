@@ -314,7 +314,7 @@ const DancePlayer = () => {
           </>
         ) : (loadError ? (
           <center>
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', my: 4, width: '80vw' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', my: 4 }}>
               <Alert severity='error' sx={{mb: 3, textAlign: 'left'}}>
                 Sorry, it looks like we had trouble loading the dance. Try again by clicking the button below! If the issue is
                 not resolved shortly, it may mean that the dance has been deleted or you do not have permission to play it.
