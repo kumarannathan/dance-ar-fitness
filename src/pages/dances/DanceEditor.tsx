@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, FilesetResolver, Landmark, PoseLandmarker } from '@mediapipe/tasks-vision';
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Checkbox, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { BODY_LANDMARK_NAMES, getConnectedLandmarks, getLandmarkAngle, getLandmarkEligibleConnections, isLandmarkEligibleForAngles, ScoringPoseData } from '../../utils/landmark';
 import { getEuclideanDistance, radToDeg } from '../../utils/math';
 import { ExpandMore, Pause, PlayArrow, UploadFile } from '@mui/icons-material';
@@ -27,6 +27,7 @@ const DanceEditor = () => {
   const [paused, setPaused] = useState<boolean>(false);
   const [landmarkSelection, setLandmarkSelection] = useState<BodyLandmarkSelectionDetails|null>(null);
   const [scoreData, setScoreData] = useState<DanceScoringDataPoints[]>([]);
+  const [fittingEnabled, setFittingEnabled] = useState(false);
   const [editPointsOpen, setEditPointsOpen] = useState(false);
   const [editPointsScore, setEditPointsScore] = useState(0);
   const [editPointsIndex, setEditPointsIndex] = useState(0);
@@ -53,7 +54,7 @@ const DanceEditor = () => {
           canvasCtx.arc(canvasRef.current.width * landmark[joint].x, canvasRef.current.height * landmark[joint].y, 5, 0, 2 * Math.PI);
           canvasCtx.strokeStyle = 'white';
           if (landmarkSelection && landmarkSelection.landmarkIndex === parseInt(joint)) {
-            canvasCtx.strokeStyle = '#a0ebf0';
+            canvasCtx.strokeStyle = '#00ff00';
           }
           canvasCtx.stroke();
         }
@@ -73,7 +74,7 @@ const DanceEditor = () => {
     let videoFrame = gVideoFrame.current;
 
     const processVideo = () => {
-      if (cancel || paused) {
+      if (cancel || (paused && !fittingEnabled)) {
         return;
       }
       if (!landmarker || !videoRef.current || !sliderRef.current) {
@@ -99,7 +100,7 @@ const DanceEditor = () => {
     return () => {
       cancel = true;
     };
-  }, [landmarker, loading, paused, drawPose, landmarkSelection]);
+  }, [landmarker, loading, paused, fittingEnabled, drawPose, landmarkSelection]);
 
   useEffect(() => {
     if (!videoRef.current || !paused) return;
@@ -160,7 +161,7 @@ const DanceEditor = () => {
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     // Right now, we will only allow clicking while paused.
-    if (!canvasRef.current || !videoRef.current || !paused) return;
+    if (!canvasRef.current || !videoRef.current || !paused || fittingEnabled) return;
 
     const cvsRect = canvasRef.current.getBoundingClientRect();
     const clickX = (event.clientX - cvsRect.left) / videoRef.current.clientWidth;
@@ -310,6 +311,29 @@ const DanceEditor = () => {
     setEditPointsScore(points);
   };
 
+  const toggleFittingEnabled = () => {
+    if (!fittingEnabled && landmarkSelection) {
+      setLandmarkSelection(null);
+    }
+    setFittingEnabled(!fittingEnabled);
+  };
+
+  const downloadScoreDataJson = () => {
+    // This is isn't react-like but if it's good enough for StackOverflow, it's good enough for this.
+    // https://stackoverflow.com/questions/44656610/download-a-string-as-txt-file-in-react
+
+    const element = document.createElement('a');
+    let exportableScoreData = scoreData.map((score) => {
+      const { _poseAtTimestamp: nope, ...rest } = score;
+      return rest;
+    })
+    const file = new Blob([JSON.stringify(exportableScoreData)]);
+    element.href = URL.createObjectURL(file);
+    element.download = 'scoring-data.json';
+    document.body.appendChild(element);
+    element.click();
+  };
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <div hidden={loading}>
@@ -328,31 +352,39 @@ const DanceEditor = () => {
             <Typography variant="h6" gutterBottom>
               Camera Feed
             </Typography>
-            <Box sx={{ width: '100%', position: 'relative' }}>
-              <video
-                ref={videoRef}
-                style={{
-                  width: '100%',
-                  height: 400,
-                  borderRadius: 8
-                }}
-                autoPlay
-                playsInline
-              />
-              <canvas
-                ref={canvasRef}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: 400,
-                  borderRadius: 8
-                }}
-                width={videoRef.current?.videoWidth ?? 600}
-                height={videoRef.current?.videoHeight ?? 400}
-                onClick={handleCanvasClick}
-              />
+            <Box>
+              <div style={{
+                position: 'relative',
+                display: 'inline-block',
+                alignItems: 'center',
+                margin: 'auto'
+              }}>
+                <video
+                  ref={videoRef}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    maxHeight: '70vh',
+                    borderRadius: 8
+                  }}
+                  autoPlay
+                  playsInline
+                />
+                <canvas
+                  ref={canvasRef}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    maxHeight: '70vh',
+                    borderRadius: 8,
+                    imageRendering: 'crisp-edges'
+                  }}
+                  width={videoRef.current?.videoWidth ?? 600}
+                  height={videoRef.current?.videoHeight ?? 400}
+                  onClick={handleCanvasClick}
+                />
               {(landmarkSelection != null && gPose.current) ? (
                 <div
                   style = {{
@@ -449,6 +481,7 @@ const DanceEditor = () => {
                   </Paper>
                 </div>
               ) : ''}
+            </div>
             </Box>
             <input
               type="range"
@@ -468,6 +501,20 @@ const DanceEditor = () => {
                 <Pause />
               )}
             </IconButton>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox 
+                    checked={fittingEnabled}
+                    onClick={toggleFittingEnabled}
+                  />
+                }
+                label="Enable fitting while paused" 
+              />
+            </FormGroup>
+            <Typography>
+              Note: Points cannot be selected while fitting is enabled. We recommend enabling it temporarily to readjust angles before adding them.
+            </Typography>
           </Paper>
 
           <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
@@ -547,6 +594,11 @@ const DanceEditor = () => {
                     </AccordionActions>
                   </Accordion>
                 ))}
+                <Button
+                  onClick={downloadScoreDataJson}
+                >
+                  Download Score Data (.json)
+                </Button>
               </Box>
             )}
           </Paper>
