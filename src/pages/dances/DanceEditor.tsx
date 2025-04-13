@@ -1,9 +1,14 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, FilesetResolver, Landmark, PoseLandmarker } from '@mediapipe/tasks-vision';
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Checkbox, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Alert, Box, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { BODY_LANDMARK_NAMES, getConnectedLandmarks, getLandmarkAngle, getLandmarkEligibleConnections, isLandmarkEligibleForAngles, ScoringPoseData } from '../../utils/landmark';
 import { getEuclideanDistance, radToDeg } from '../../utils/math';
 import { ExpandMore, Pause, PlayArrow, UploadFile } from '@mui/icons-material';
+import { FirestoreDanceTrackObject } from '../../types/firestoreDataTypes';
+import { useUser } from '../../contexts/UserContext';
+import { uploadVideo } from '../../utils/videoUpload';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '../../firebase';
 
 interface BodyLandmarkSelectionDetails extends Landmark {
   landmarkIndex: number;
@@ -21,6 +26,7 @@ interface DanceScoringDataPoints {
 };
 
 const DanceEditor = () => {
+  const { user } = useUser();
 
   const [landmarker, setLandmarker] = useState<PoseLandmarker|null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -31,6 +37,23 @@ const DanceEditor = () => {
   const [editPointsOpen, setEditPointsOpen] = useState(false);
   const [editPointsScore, setEditPointsScore] = useState(0);
   const [editPointsIndex, setEditPointsIndex] = useState(0);
+
+  const [videoFile, setVideoFile] = useState<File|null>(null);
+  const [hasPublishingDialogOpen, setHasPublishingDialogOpen] = useState(false);
+  const [uploadDetails, setUploadDetails] = useState<FirestoreDanceTrackObject>({
+    userId: '0', // (to be filled out upon sending request)
+    title: '',
+    description: '',
+    songTitle: '',
+    songAuthor: '',
+    duration: '',
+    visibility: 'public',
+    videoUrl: '',
+    scoreData: []
+  });
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [submissionComplete, setSubmissionComplete] = useState(false);
+  const [submissionFailure, setSubmissionFailure] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -112,6 +135,7 @@ const DanceEditor = () => {
     if (!event.target.files || !event.target.files.length || !videoRef.current) return;
 
     const videoFile = event.target.files[0];
+    setVideoFile(videoFile);
     const localVideoUrl = URL.createObjectURL(videoFile);
 
     videoRef.current.src = localVideoUrl;
@@ -334,9 +358,45 @@ const DanceEditor = () => {
     element.click();
   };
 
+  const handleUploadDetailChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
+    if (!Object.keys(uploadDetails).includes(field)) {
+      return;
+    }
+
+    let newUploadDetails = {...uploadDetails};
+    // This is just super annoying with typescript
+    // @ts-ignore
+    newUploadDetails[field] = event.target.value;
+    setUploadDetails(newUploadDetails);
+  };
+
+  const startUpload = async () => {
+    if (!videoRef.current || !user || !videoFile) return;
+    // TODO: detail form error checking
+
+    let finalUploadDetails = {...uploadDetails};
+    finalUploadDetails.duration = Math.floor(videoRef.current.duration / 60) + ':' + Math.floor(videoRef.current.duration % 60);
+    finalUploadDetails.userId = user.uid;
+    finalUploadDetails.scoreData = scoreData;
+    setHasPublishingDialogOpen(false);
+    setSubmitting(true);
+    try {
+      finalUploadDetails.videoUrl = await uploadVideo(videoFile, user.uid);
+      const uploadDocRef = await addDoc(collection(db, 'dances'), uploadDetails);
+      finalUploadDetails.id = uploadDocRef.id;
+    } catch (ex) {
+      console.error(ex);
+      setSubmissionFailure(true);
+      return;
+    }
+    setUploadDetails(finalUploadDetails);
+    setSubmissionFailure(false);
+    setSubmissionComplete(true);
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <div hidden={loading}>
+      <div hidden={loading || isSubmitting}>
         <Box
           sx={{
             display: 'grid',
@@ -603,6 +663,17 @@ const DanceEditor = () => {
             )}
           </Paper>
         </Box>
+        <center>
+          <Button 
+            fullWidth
+            variant='outlined'
+            sx={{mt: 3, maxWidth: '80vw'}}
+            disabled={scoreData.length === 0}
+            onClick={() => { setHasPublishingDialogOpen(true) }}
+          >
+            Add Details & Upload
+          </Button>
+        </center>
       </div>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <div hidden={!loading}>
@@ -644,6 +715,104 @@ const DanceEditor = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        open={hasPublishingDialogOpen}
+        onClose={() => { setHasPublishingDialogOpen(false) }}
+      >
+        <DialogTitle>
+          Add Details & Upload
+        </DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth sx={{mb: 2}}>
+            <TextField
+              label="Dance Title"
+              variant="filled"
+              value={uploadDetails.title}
+              required
+              onChange={(e) => handleUploadDetailChange(e, 'title')}
+            />
+          </FormControl>
+          <FormControl fullWidth sx={{mb: 2}}>
+            <TextField
+              label="Description"
+              variant="filled"
+              value={uploadDetails.description}
+              required
+              onChange={(e) => handleUploadDetailChange(e, 'description')}
+            />
+          </FormControl>
+          <FormControl fullWidth sx={{mb: 2}}>
+            <TextField
+              label="Song Title"
+              variant="filled"
+              value={uploadDetails.songTitle}
+              required
+              onChange={(e) => handleUploadDetailChange(e, 'songTitle')}
+            />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <TextField
+              label="Song Artist"
+              variant="filled"
+              value={uploadDetails.songAuthor}
+              required
+              onChange={(e) => handleUploadDetailChange(e, 'songAuthor')}
+            />
+          </FormControl>
+
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => { setHasPublishingDialogOpen(false) }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={startUpload}
+          >
+            Upload
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {isSubmitting ? (
+        <>
+          {(!submissionComplete && !submissionFailure) ? (
+            <>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, justifyContent: 'center', my: 4 }}>
+                <CircularProgress />
+                <Typography variant='h5'>
+                  Uploading your dance, please wait...
+                </Typography>
+              </Box>
+            </>
+          ) : ''}
+          {submissionFailure ? (
+            <center>
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', my: 4, width: '80vw' }}>
+                <Alert severity='error' sx={{mb: 3}}>
+                  An error occurred while uploading your dance! Don't worry, your data has not been lost. To continue, you can either
+                  go back to the editor to make changes or try uploading again.
+                </Alert>
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'center' }}>
+                  <Button
+                    onClick={() => {setSubmitting(false)}}
+                    variant='outlined'
+                  >
+                    Back to editor
+                  </Button>
+                  <Button
+                    onClick={startUpload}
+                    variant='outlined'
+                  >
+                    Retry upload
+                  </Button>
+                </Box>
+              </Box>
+            </center>
+          ) : ''}
+        </>
+      ) : ''}
     </Container>
   );
 };

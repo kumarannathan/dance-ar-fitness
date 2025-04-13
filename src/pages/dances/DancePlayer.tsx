@@ -1,9 +1,12 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
-import { Box, Button, CircularProgress, Container, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { gradePose, ScoringPoseData } from '../../utils/landmark';
 import { UploadFile } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
+import { collection, doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
+import type { FirestoreDanceTrackObject } from '../../types/firestoreDataTypes';
 
 // How many seconds to allow a maximum score to be reached
 const DANCE_SCORING_PERIOD = 0.75;
@@ -61,6 +64,18 @@ const DancePlayer = () => {
   const [currentScore, setCurrentScore] = useState(0);
   const [scoringData, setScoringData] = useState<DanceScoringDataPoints[]>([]);
   const [hasLoadedVideo, setHasLoadedVideo] = useState(false);
+  const [loadError, setHasLoadError] = useState(false);
+  const [trackInfo, setTrackInfo] = useState<FirestoreDanceTrackObject>({
+    userId: '0',
+    title: 'Locally Uploaded File',
+    description: 'This file was provided by a local debug upload',
+    songTitle: 'Local File',
+    songAuthor: 'Debug Mode',
+    duration: '00:00',
+    visibility: 'private',
+    videoUrl: '--',
+    scoreData: []
+  });
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -69,6 +84,7 @@ const DancePlayer = () => {
   const camDebugCanvasRef = useRef<HTMLCanvasElement>(null);
   // This is a ref so we don't cause a re-render every time we update it in useEffect
   const scoringStatisticsRef = useRef<number[]>([]);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (loading) return;
@@ -144,6 +160,52 @@ const DancePlayer = () => {
       cancel = true;
     };
   }, [videoRef, canvasRef, scoringStatisticsRef, scoringData, landmarker, cameraLandmarker, loading]);
+
+  const fetchFirebaseData = useCallback(async () => {
+    const result = await getDoc(doc(collection(db, 'dances'), danceId));
+    if (!result.exists) {
+      throw new Error('document does not exist!');
+    }
+    const data = result.data();
+    if (!data) {
+      throw new Error('document data not found!');
+    }
+    return data as FirestoreDanceTrackObject;
+  }, [danceId]);
+
+  const loadFirebaseData = useCallback((data: FirestoreDanceTrackObject) => {
+    setTrackInfo(data);
+    setScoringData(data.scoreData);
+    scoringStatisticsRef.current = Array(data.scoreData.length).fill(0);
+    if (videoRef.current) {
+      videoRef.current.src = data.videoUrl;
+    }
+  }, []);
+
+  useEffect(() => {
+    // This only fetches data when given a Firebase Dance ID
+    if (debugMode || hasLoadedRef.current) return;
+
+    let cancel = false;
+    hasLoadedRef.current = true;
+
+    const fetchWrapper = async () => {
+      try {
+        const data = await fetchFirebaseData();
+        if (cancel) return;
+        loadFirebaseData(data);
+        loadPoseTracking();
+      } catch (error) {
+        console.error(error);
+        setHasLoadError(true);
+      }
+    };
+
+    fetchWrapper();
+    return () => {
+      cancel = true;
+    };
+  }, [debugMode, fetchFirebaseData, loadFirebaseData, loadError]);
 
   const loadPoseTracking = async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -250,12 +312,32 @@ const DancePlayer = () => {
               <input type="file" accept="application/json" hidden onChange={handleJsonUpload} />
             </Button>
           </>
+        ) : (loadError ? (
+          <center>
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', my: 4, width: '80vw' }}>
+              <Alert severity='error' sx={{mb: 3, textAlign: 'left'}}>
+                Sorry, it looks like we had trouble loading the dance. Try again by clicking the button below! If the issue is
+                not resolved shortly, it may mean that the dance has been deleted or you do not have permission to play it.
+              </Alert>
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  onClick={() => {
+                    hasLoadedRef.current = false;
+                    setHasLoadError(false);
+                  }}
+                  variant='outlined'
+                >
+                  Retry
+                </Button>
+              </Box>
+            </Box>
+          </center>
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
             <CircularProgress />
           </Box>
         ))
-      ) : (
+      )) : (
         <>
           <center>
             <div style={{
@@ -318,6 +400,37 @@ const DancePlayer = () => {
         <video ref={camVideoRef} width={"100%"} playsInline style={{opacity: 0}} />
         <canvas ref={camCanvasRef} height={camVideoRef.current?.clientHeight} width={camVideoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0}}></canvas>
         <canvas ref={camDebugCanvasRef} height={camVideoRef.current?.clientHeight} width={camVideoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, zIndex: 2}}></canvas>
+      </div>
+      {/* track details container */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          borderLeft: '5px solid',
+          display: loading ? 'none' : 'flex',
+          flexDirection: 'column',
+          paddingLeft: 20
+        }}
+      >
+        <div style={{
+          fontSize: '1.5em',
+          fontWeight: 'bolder',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+        }}>
+          {trackInfo.title}
+        </div>
+        <div style={{
+          fontWeight: 'bold',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+        }}>
+          {trackInfo.songTitle}
+        </div>
+        <div style={{
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+        }}>
+          {trackInfo.songAuthor}
+        </div>
       </div>
     </Container>
   );
