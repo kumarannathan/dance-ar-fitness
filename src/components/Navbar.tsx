@@ -66,9 +66,10 @@ const Navbar = () => {
     { text: 'Blog', path: '/blog' },
     { text: 'Pricing', path: '/pricing' },
     ...(user ? [
-      { text: 'Workout', path: '/workout' },
-      { text: 'Create Dance', path: '/create' },
-      { text: 'Beta Dance Battle', path: '/beta' },
+      // { text: 'Workout', path: '/workout' },
+      // { text: 'Create Dance', path: '/create' },
+      // { text: 'Beta Dance Battle', path: '/beta' },
+      { text: 'Upload Dance', path: '/dance/upload' },
       { text: 'Profile', path: '/profile' },
     ] : []),
   ];
