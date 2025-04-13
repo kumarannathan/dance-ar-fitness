@@ -186,13 +186,13 @@ const DancePlayer = () => {
     // This only fetches data when given a Firebase Dance ID
     if (debugMode || hasLoadedRef.current) return;
 
-    let cancel = false;
+    // let cancel = false;
     hasLoadedRef.current = true;
 
     const fetchWrapper = async () => {
       try {
         const data = await fetchFirebaseData();
-        if (cancel) return;
+        // if (cancel) return;
         loadFirebaseData(data);
         loadPoseTracking();
       } catch (error) {
@@ -202,9 +202,11 @@ const DancePlayer = () => {
     };
 
     fetchWrapper();
+    /*
     return () => {
       cancel = true;
     };
+    */
   }, [debugMode, fetchFirebaseData, loadFirebaseData, loadError]);
 
   const loadPoseTracking = async () => {

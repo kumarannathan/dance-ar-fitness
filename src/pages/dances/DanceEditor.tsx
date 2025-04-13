@@ -377,12 +377,15 @@ const DanceEditor = () => {
     let finalUploadDetails = {...uploadDetails};
     finalUploadDetails.duration = Math.floor(videoRef.current.duration / 60) + ':' + Math.floor(videoRef.current.duration % 60);
     finalUploadDetails.userId = user.uid;
-    finalUploadDetails.scoreData = scoreData;
+    finalUploadDetails.scoreData = scoreData.map((score) => {
+      const { _poseAtTimestamp: nope, ...rest } = score;
+      return rest;
+    });
     setHasPublishingDialogOpen(false);
     setSubmitting(true);
     try {
       finalUploadDetails.videoUrl = await uploadVideo(videoFile, user.uid);
-      const uploadDocRef = await addDoc(collection(db, 'dances'), uploadDetails);
+      const uploadDocRef = await addDoc(collection(db, 'dances'), finalUploadDetails);
       finalUploadDetails.id = uploadDocRef.id;
     } catch (ex) {
       console.error(ex);
@@ -802,12 +805,24 @@ const DanceEditor = () => {
                     Back to editor
                   </Button>
                   <Button
-                    onClick={startUpload}
+                    onClick={() => {
+                      setSubmissionFailure(false);
+                      startUpload();
+                    }}
                     variant='outlined'
                   >
                     Retry upload
                   </Button>
                 </Box>
+              </Box>
+            </center>
+          ) : ''}
+          {submissionComplete ? (
+            <center>
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', my: 4, width: '80vw' }}>
+                <Alert severity='success' sx={{mb: 3}}>
+                  Your dance has been uploaded! You can now view it on your profile!
+                </Alert>
               </Box>
             </center>
           ) : ''}
