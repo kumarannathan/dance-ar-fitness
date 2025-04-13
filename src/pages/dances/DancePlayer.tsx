@@ -6,12 +6,12 @@ import { UploadFile } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 
 // How many seconds to allow a maximum score to be reached
-const DANCE_SCORING_PERIOD = 0.5;
+const DANCE_SCORING_PERIOD = 0.75;
 // How long to wait until we start the scoring process, this gives the user
 // some time to see the dance move and try to make it on their own. We may want
 // to make this configurable by the user so more advanced dancers don't lose points
 // for being on time.
-const DANCE_SCORING_START_DELAY = 0.25;
+const DANCE_SCORING_START_DELAY = 0.0;
 // This shows how many seconds we will display scoring feedback to the user.
 const DANCE_SCORING_FEEDBACK_PERIOD = 1.5;
 
@@ -268,7 +268,7 @@ const DancePlayer = () => {
           </center>
         </>
       )}
-      {(debugMode || getScoreData(currentScore).status !== 'x') ? (
+      {(debugMode ? currentScore !== 0 : getScoreData(currentScore).status !== 'x') ? (
         <div style={{
           position: 'absolute',
           top: '20px',
