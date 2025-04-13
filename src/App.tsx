@@ -20,6 +20,7 @@ import { UserProvider, useUser } from './contexts/UserContext';
 import PricingOverview from './pages/PricingPanel';
 import './App.css';
 import DanceEditor from './pages/dances/DanceEditor';
+import DancePlayer from './pages/dances/DancePlayer';
 
 const theme = createTheme({
   palette: {
@@ -118,6 +119,7 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/beta" element={<PrivateRoute><BetaDanceBattle /></PrivateRoute>} />
               <Route path="/dance/upload" element={<DanceEditor />} />
+              <Route path="/dance/play/:danceId" element={<DancePlayer />} />
               <Route path="/debug/pose-tracking" element={<PoseTracking />} />
               <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
               <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />

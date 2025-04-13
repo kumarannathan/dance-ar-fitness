@@ -123,6 +123,8 @@ export const gradePose = (userPose: Landmark[], targets: ScoringPoseData[]) => {
     // dividing by Math.PI ensures that our score is between zero and one since
     // getLandmarkAngle returns the angle in radians and the max angle is PI
     let score = 1 - (Math.abs(angle - target.y) / Math.PI);
+    // squaring the scores makes it so they have to be closer to the actual values
+    score *= score;
     overallScore += score * target.i;
   }
   // overallScore /= importanceSum;
