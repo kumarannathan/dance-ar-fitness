@@ -1,7 +1,7 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { Box, Button, CircularProgress, Container, Typography } from '@mui/material';
-import { BodyLandmarkType, getLandmarkAngle, gradePose, ScoringPoseData } from '../../utils/landmark';
+import { gradePose, ScoringPoseData } from '../../utils/landmark';
 import { UploadFile } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 
