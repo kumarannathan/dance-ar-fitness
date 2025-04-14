@@ -205,7 +205,6 @@ const Navbar = () => {
     { text: 'Pricing', path: '/pricing' },
     ...(user ? [
       { text: 'Upload Dance', path: '/dance/upload' },
-      { text: 'Dance Player', path: '/dance/play' },
       { text: 'Profile', path: '/profile' },
     ] : []),
   ];
@@ -306,7 +305,7 @@ const Navbar = () => {
   );
 
   return (
-    <StyledAppBar position="static" elevation={0}>
+    <StyledAppBar position="sticky" elevation={0}>
       <Toolbar sx={{ 
         justifyContent: 'space-between', 
         maxWidth: '1200px', 
