@@ -18,7 +18,7 @@ const features = [
   {
     icon: <FitnessCenterIcon sx={{ fontSize: 28 }} />,
     title: 'Real-time Pose Detection',
-    description: 'Advanced AR technology tracks your movements with precision.',
+    description: 'Advanced Computer Vision technology tracks your movements with precision.',
   },
   {
     icon: <CreateIcon sx={{ fontSize: 28 }} />,
@@ -94,7 +94,7 @@ const Home = () => {
                     fontSize: { xs: '1.25rem', md: '1.5rem' }
                   }}
                 >
-                  Experience the future of dance fitness with AR technology
+                  Experience the future of dance fitness with Computer Vision technology
                 </Typography>
                 <Button
                   variant="contained"
@@ -133,7 +133,6 @@ const Home = () => {
                 sx={{
                   width: '100%',
                   maxWidth: 500,
-                  aspectRatio: '1',
                   background: 'rgba(255, 255, 255, 0.05)',
                   borderRadius: '30px',
                   backdropFilter: 'blur(20px)',
@@ -144,16 +143,23 @@ const Home = () => {
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                 }}
               >
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    opacity: 0.8,
-                    fontSize: '1.5rem',
-                    fontWeight: 500
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: '30px',
                   }}
                 >
-                  AR Preview
-                </Typography>
+                  <source
+                    src="/dancear-demo-action-compressed.mov"
+                    type="video/quicktime"
+                  />
+                  Your browser does not support the video tag.
+                </video>
               </MotionBox>
             </Box>
           </Box>
