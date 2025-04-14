@@ -8,7 +8,14 @@ export interface BlogPost {
 }
 
 // This is a temporary solution until we implement proper server-side loading
-const milestone1Content = `# Milestone 1: Frontend & Unity Setup
+const blogPosts: BlogPost[] = [
+  {
+    slug: 'milestone1',
+    title: 'Milestone 1: Frontend & Unity Setup',
+    date: '2024-03-30',
+    category: 'Development',
+    description: 'Establishing the product landing page, Unity framework, and project roadmap',
+    content: `# Milestone 1: Frontend & Unity Setup
 
 ## Project Roadmap & Overview
 
@@ -75,9 +82,83 @@ For Milestone 2, we plan to:
 1. Start implementing a frontend site synced to the device that shows instructions to the user
 2. Establish communication bridge between React and Unity
 3. Implement basic pose detection for dance moves
-4. Optimize loading and performance for web environment`;
+4. Optimize loading and performance for web environment`
+  },
+  {
+    slug: 'milestone3',
+    title: 'Milestone 3: Dance Player Integration and UI Refinements',
+    date: '2024-03-21',
+    category: 'Development',
+    description: 'Enhanced user experience with Dance Player integration, improved navigation, and UI refinements across the platform.',
+    content: `# Milestone 3: Dance Player Integration and UI Refinements
 
-const milestone2Content = `# Milestone 2: Pose Detection & Scoring Implementation
+We're excited to share our latest updates to the DanceAR platform, focusing on improving accessibility and user experience through enhanced navigation and UI refinements.
+
+## 🎮 Dance Player Integration
+
+One of the major additions in this milestone is the integration of the Dance Player into our main navigation. Users can now easily access the Dance Player directly from the navbar, making it simpler to:
+
+- Practice with pre-recorded dance routines
+- Upload and analyze their own dance videos
+- Get real-time feedback on their movements
+- Compare their performance with reference dances
+
+## 🎨 UI Improvements
+
+We've made several UI enhancements to create a more cohesive and user-friendly experience:
+
+### Navigation Updates
+- Added "Dance Player" to the main navigation for quick access
+- Improved the Upload Dance workflow with better visual feedback
+- Fixed header clipping issues across various pages
+
+### Layout Refinements
+- Implemented consistent page container styling
+- Added proper spacing from the fixed navbar
+- Enhanced responsive design for better mobile experience
+
+### Visual Consistency
+- Standardized component styling across the platform
+- Improved loading states and transitions
+- Enhanced error handling and user feedback
+
+## 🔧 Technical Improvements
+
+Behind the scenes, we've made several technical improvements:
+
+- Implemented proper route handling for the Dance Player
+- Added support for both specific dance IDs and debug mode
+- Enhanced the upload dance interface with better error handling
+- Improved pose detection and scoring feedback
+
+## 🎯 What's Next?
+
+As we continue to develop DanceAR, our focus remains on making dance and fitness more accessible through technology. Our upcoming priorities include:
+
+- Enhanced scoring algorithms for more precise feedback
+- Additional dance tutorials and guided learning paths
+- Improved social features for community engagement
+- Advanced pose detection and movement analysis
+
+Stay tuned for more updates as we continue to enhance the DanceAR platform!
+
+## 💡 Try It Out
+
+To experience these new features:
+1. Log in to your DanceAR account
+2. Navigate to the Dance Player from the main menu
+3. Upload your own dance video or try one of our pre-recorded routines
+4. Get real-time feedback on your movements
+
+We're excited to see how these improvements enhance your dance learning experience!`
+  },
+  {
+    slug: 'milestone2',
+    title: 'Milestone 2: Pose Detection & Scoring Implementation',
+    date: '2024-04-07',
+    category: 'Development',
+    description: 'Implementing real-time pose detection, scoring system, and user authentication',
+    content: `# Milestone 2: Pose Detection & Scoring Implementation
 
 [Read our playtesting report (requires UM Google login)](https://drive.google.com/file/d/1C02T5ZAjwalWe8X44gsov40EnNh_p1Ro/view?usp=sharing)
 
@@ -111,7 +192,7 @@ MediaPipe's pose detection can work with both live video input (such as from a w
 
 ### Pose Visualizer
 
-![](pose-tracking.png)
+<img src="pose-tracking.png" height="600" />
 
 The first step we worked on was a Pose Visualizer tool that helped us verify that MediaPipe works well on the web and helped us validate two utility functions:
 
@@ -156,120 +237,7 @@ For Milestone 3, we plan to:
 2. Implement social features for sharing scores
 3. Add more advanced pose matching algorithms
 4. Enhance the user experience with additional feedback mechanisms
-5. Move the debug screens into real activities.`;
-
-const milestone3Content = `# Milestone 3: Alpha Release
-
-## Overview
-
-In our third milestone, we've focused on polishing the user experience and implementing core features that make DanceAR more engaging and accessible. We've made significant improvements to the UI, enhanced our dance battle system, and streamlined the user flow.
-
-## Key Achievements
-
-### Enhanced User Interface
-
-#### Navigation and Layout
-- Implemented a consistent navbar height and spacing across all pages
-- Added proper page container classes to prevent content clipping
-- Improved mobile responsiveness and navigation menu
-- Created a more intuitive flow between different features
-
-#### Home Page Redesign
-- Updated the main heading to "Dance for Everyone, Powered by AI"
-- Added clear value propositions highlighting accessibility, real-time feedback, and community aspects
-- Implemented smooth animations and transitions for better user engagement
-- Integrated a modern, clean aesthetic with consistent branding
-
-### Dance Battle System
-
-#### Real-time Scoring
-- Implemented a sophisticated scoring system with grades (S, A, B, C, D, F)
-- Added motivational messages and emoji feedback based on performance
-- Integrated real-time visual feedback during dance battles
-
-#### Battle Interface
-- Created a split-screen view for dance battles
-- Added an expandable chat interface for AI feedback
-- Implemented progress indicators and performance metrics
-- Enhanced the video comparison system for better accuracy
-
-### Content Creation and Sharing
-
-#### Dance Upload System
-- Developed a streamlined dance upload interface
-- Added support for video processing and pose detection
-- Implemented metadata editing for uploaded content
-- Created a preview system for uploaded dances
-
-#### Dance Player
-- Built a dedicated dance player component
-- Added support for both uploaded and demo content
-- Implemented controls for playback and practice
-- Integrated scoring system with the player
-
-### Social Features
-
-#### Profile System
-- Enhanced user profiles with dance history
-- Added support for viewing and managing uploaded content
-- Implemented basic social features for future expansion
-
-#### Community Integration
-- Prepared foundation for social sharing
-- Added infrastructure for future leaderboards
-- Implemented basic user interaction features
-
-## Technical Improvements
-
-### Performance Optimization
-- Improved pose detection accuracy
-- Enhanced real-time processing capabilities
-- Optimized video handling and streaming
-- Reduced loading times and resource usage
-
-### Code Quality
-- Implemented consistent styling across components
-- Enhanced error handling and user feedback
-- Improved component reusability
-- Added comprehensive documentation
-
-## Next Steps
-
-For our next milestone, we plan to:
-1. Expand social features and community engagement
-2. Implement advanced dance tutorials and learning paths
-3. Add more sophisticated scoring algorithms
-4. Enhance the AI feedback system
-5. Develop more interactive practice modes
-
-## Conclusion
-
-Milestone 3 represents a significant step forward in making DanceAR more polished and user-friendly. The improvements to the UI, dance battle system, and content creation tools have brought us closer to our goal of making dance and fitness more accessible through technology.`;
-
-const blogPosts: BlogPost[] = [
-  {
-    slug: 'milestone3',
-    title: 'Milestone 3: Alpha Release',
-    date: '2024-04-14',
-    category: 'Development',
-    description: 'Enhancing user experience with improved UI, dance battle features, and social integration',
-    content: milestone3Content
-  },
-  {
-    slug: 'milestone2',
-    title: 'Milestone 2: Pose Detection & Scoring Implementation',
-    date: '2024-04-07',
-    category: 'Development',
-    description: 'Implementing real-time pose detection, scoring system, and user authentication',
-    content: milestone2Content
-  },
-  {
-    slug: 'milestone1',
-    title: 'Milestone 1: Frontend & Unity Setup',
-    date: '2024-03-30',
-    category: 'Development',
-    description: 'Establishing the product landing page, Unity framework, and project roadmap',
-    content: milestone1Content
+5. Move the debug screens into real activities.`
   }
 ];
 
