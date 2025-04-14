@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth } from '../firebase';
 import {
   Container,
@@ -26,6 +26,21 @@ const Login = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      navigate('/');
+    } catch (err) {
+      setError('Failed to log in. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
       navigate('/');
     } catch (err) {
       setError('Failed to log in. Please check your credentials.');
@@ -85,6 +100,15 @@ const Login = () => {
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+            disabled={loading}
+            onClick={handleGoogleLogin}
+          >
+            {loading ? 'Signing in...' : 'Sign in with Google'}
           </Button>
           <Box sx={{ textAlign: 'center' }}>
             <Link component={RouterLink} to="/signup" variant="body2">

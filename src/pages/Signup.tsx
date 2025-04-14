@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../firebase';
 import {
   Container,
@@ -40,6 +40,21 @@ const Signup = () => {
     }
   };
 
+  const handleGoogleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      navigate('/');
+    } catch (err) {
+      setError('Failed to sign up with Google.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container maxWidth="sm">
       <Box
@@ -58,6 +73,18 @@ const Signup = () => {
             {error}
           </Alert>
         )}
+        <Button
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+          disabled={loading}
+          onClick={handleGoogleLogin}
+        >
+          Sign up with Google
+        </Button>
+        <Typography>
+          OR
+        </Typography>
         <Box component="form" onSubmit={handleSignup} sx={{ mt: 1, width: '100%' }}>
           <TextField
             margin="normal"
