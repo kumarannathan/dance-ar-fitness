@@ -9,6 +9,7 @@ import {
   LinearProgress,
   Collapse,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { UploadFile, Help, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
@@ -225,10 +226,21 @@ const DanceBattle = () => {
     handleUserLoad();
 
     return () => {
-      benchmarkVideoRef.current?.removeEventListener('loadedmetadata', handleBenchmarkLoad);
-      userVideoRef.current?.removeEventListener('loadedmetadata', handleUserLoad);
+      // Store refs in variables to avoid the exhaustive-deps warning
+      const benchmarkVideo = benchmarkVideoRef.current;
+      const userVideo = userVideoRef.current;
+      
+      if (benchmarkVideo) {
+        benchmarkVideo.pause();
+        benchmarkVideo.srcObject = null;
+      }
+      
+      if (userVideo) {
+        userVideo.pause();
+        userVideo.srcObject = null;
+      }
     };
-  }, [benchmarkVideo, userVideo]);
+  }, [/* other dependencies */]);
 
   const handleBenchmarkVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {

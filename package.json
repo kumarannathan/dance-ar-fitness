@@ -2,6 +2,11 @@
   "name": "dance-ar-fitness",
   "version": "0.1.0",
   "private": true,
+  "description": "DanceAR Fitness - Making dance and fitness accessible through technology",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/dance-ar-fitness"
+  },
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.14.0",

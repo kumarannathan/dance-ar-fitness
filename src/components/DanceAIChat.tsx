@@ -120,14 +120,6 @@ const SendButton = styled(IconButton)`
   }
 `;
 
-const StyledBox = styled(Box, {
-  shouldForwardProp: prop => prop !== 'isChatExpanded'
-})<{ isChatExpanded?: boolean }>`
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-left: ${props => props.isChatExpanded ? '320px' : '0'};
-  width: ${props => props.isChatExpanded ? 'calc(100% - 320px)' : '100%'};
-`;
-
 interface ChatMessage {
   text: string;
   isUser: boolean;

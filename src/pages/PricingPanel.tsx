@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Container, Typography, Paper, Switch, Button } from '@mui/material';
+import { Box, Container, Typography, Paper, Divider, Button, Grid } from '@mui/material';
 import { motion } from 'framer-motion';
 import styled from '@emotion/styled';
 import CheckIcon from '@mui/icons-material/Check';
@@ -44,17 +44,7 @@ const StyledButton = styled(Button)<{ isHighlighted?: boolean }>`
   }
 `;
 
-const PricingToggle = styled(Box)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 3rem;
-`;
-
 const PricingOverview = () => {
-  const [isYearly, setIsYearly] = useState(false);
-
   const subscriptionPlans = [
     {
       name: 'Free Plan',
