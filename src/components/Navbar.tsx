@@ -24,6 +24,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { BugReport } from '@mui/icons-material';
 import styled from '@emotion/styled';
+import zIndex from '@mui/material/styles/zIndex';
 
 export const NAVBAR_HEIGHT = '80px';
 
@@ -305,7 +306,7 @@ const Navbar = () => {
   );
 
   return (
-    <StyledAppBar position="sticky" elevation={0}>
+    <StyledAppBar position="static" elevation={0}>
       <Toolbar sx={{ 
         justifyContent: 'space-between', 
         maxWidth: '1200px', 

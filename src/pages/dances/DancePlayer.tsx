@@ -359,7 +359,7 @@ const DancePlayer = () => {
           right: '20px',
           backgroundColor: getScoreData(currentScore).color,
           margin: '10px',
-          zIndex: 2,
+          zIndex: 3,
           padding: '5px 30px',
           borderRadius: 10
         }} hidden={loading}>
