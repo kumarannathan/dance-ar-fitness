@@ -684,7 +684,7 @@ const DanceEditor = () => {
             Dance Uploader
           </Typography>
           <Typography variant='body1' gutterBottom>
-            Upload a dance here. (TODO: decent upload UI)
+            Upload a dance for others to play here! Start by selecting a video file from your device
           </Typography>
           <Button
             component="label"

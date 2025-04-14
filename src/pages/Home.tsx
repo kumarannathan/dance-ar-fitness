@@ -105,8 +105,7 @@ const Home = () => {
         maxWidth="lg"
         sx={{
           position: 'relative',
-          zIndex: 1,
-          py: { xs: 8, md: 12 },
+          zIndex: 1
         }}
       >
         <motion.div
