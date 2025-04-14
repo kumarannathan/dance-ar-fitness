@@ -398,287 +398,289 @@ const DanceEditor = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <div hidden={loading || isSubmitting}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: '1fr 1fr',
-            },
-            gap: 3,
-          }}
-          hidden={loading}
-        >
-          <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
-            <Typography variant="h6" gutterBottom>
-              Camera Feed
-            </Typography>
-            <Box>
-              <div style={{
-                position: 'relative',
-                display: 'inline-block',
-                alignItems: 'center',
-                margin: 'auto'
-              }}>
-                <video
-                  ref={videoRef}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    maxHeight: '70vh',
-                    borderRadius: 8
-                  }}
-                  autoPlay
-                  playsInline
-                />
-                <canvas
-                  ref={canvasRef}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    maxHeight: '70vh',
-                    borderRadius: 8,
-                    imageRendering: 'crisp-edges'
-                  }}
-                  width={videoRef.current?.videoWidth ?? 600}
-                  height={videoRef.current?.videoHeight ?? 400}
-                  onClick={handleCanvasClick}
-                />
-              {(landmarkSelection != null && gPose.current) ? (
-                <div
-                  style = {{
-                    position: 'absolute',
-                    zIndex: 2,
-                    top: landmarkSelection?.clickY || 0,
-                    left: landmarkSelection?.clickX || 0
-                  }}
-                >
-                  <Paper elevation={3} sx={{ p: 2, width: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
-                    <Typography variant="h6" >
-                      {BODY_LANDMARK_NAMES[landmarkSelection.landmarkIndex]}
-                    </Typography>
-                    <Typography variant="caption" gutterBottom>
-                      Angle: {Math.round(radToDeg(getLandmarkAngle(
-                        gPose.current[landmarkSelection.landmarkIndex],
-                        gPose.current[landmarkSelection.startIndex],
-                        gPose.current[landmarkSelection.endIndex]
-                      )))}˚
-                    </Typography>
-                    <div style={{
-                      gap: 10,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      width: '100%'
-                    }}>
-                      <FormControl variant="standard" fullWidth>
-                        <InputLabel id="start-angle-selector">Start Point</InputLabel>
-                        <Select
-                          labelId="start-angle-selector"
-                          value={landmarkSelection.startIndex + ''}
-                          variant="standard"
-                          label="Start Point"
-                          onChange={handleSelectStartAngle}
-                        >
-                          {getConnectedLandmarks(landmarkSelection.landmarkIndex, []).map(x => (
-                            <MenuItem value={x} key={x}>
-                              {BODY_LANDMARK_NAMES[x]}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                      <FormControl variant="standard" fullWidth>
-                        <InputLabel id="end-angle-selector">End Point</InputLabel>
-                        <Select
-                          labelId="end-angle-selector"
-                          value={landmarkSelection.endIndex + ''}
-                          variant="standard"
-                          label="End Point"
-                          onChange={handleSelectEndAngle}
-                        >
-                          {getConnectedLandmarks(landmarkSelection.landmarkIndex, []).map(x => (
-                            <MenuItem value={x} key={x}>
-                              {BODY_LANDMARK_NAMES[x]}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                      <FormControl variant="standard" fullWidth>
-                        <TextField
-                          label="Points"
-                          variant="standard"
-                          value={landmarkSelection.points}
-                          onChange={handleChangePoints}
-                        />
-                      </FormControl>
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'right',
-                        gap: 5
-                      }}>
-                        <Button
-                          variant="outlined"
-                          style={{
-                            width: '100%'
-                          }}
-                          onClick={cancelLandmarkSelection}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          style={{
-                            width: '100%'
-                          }}
-                          disabled={landmarkSelection.startIndex === landmarkSelection.endIndex}
-                          onClick={saveLandmarkSelection}
-                        >
-                          Save
-                        </Button>
-                      </div>
-                    </div>
-                  </Paper>
-                </div>
-              ) : ''}
-            </div>
-            </Box>
-            <input
-              type="range"
-              min={0}
-              max={videoRef.current?.duration}
-              onChange={updateVideoTime}
-              ref={sliderRef}
-              step={0.01}
-              style={{
-                width: '100%'
-              }}
-            />
-            <IconButton aria-label="Pause" onClick={togglePause}>
-              {paused ? (
-                <PlayArrow />
-              ) : (
-                <Pause />
-              )}
-            </IconButton>
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox 
-                    checked={fittingEnabled}
-                    onClick={toggleFittingEnabled}
-                  />
-                }
-                label="Enable fitting while paused" 
-              />
-            </FormGroup>
-            <Typography>
-              Note: Points cannot be selected while fitting is enabled. We recommend enabling it temporarily to readjust angles before adding them.
-            </Typography>
-          </Paper>
-
-          <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
-            <Typography variant="h6">
-              Tracking Points
-            </Typography>
-            {(scoreData.length === 0 || !videoRef.current) ? (
-              <Typography variant="body1" gutterBottom>
-                To get started, pause the video at times you want to add scoring to. Then, click on each point you want to track, enter the scoring information
-                you would like to use, and hit save.
-              </Typography>
-            ) : (
-              <Box sx={{ width: '100%', p: 2, textAlign: 'left' }}>
-                {(!paused || scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100)).length === 0) ? (
-                  <Typography variant="body1" gutterBottom>
-                    Pause or jump to a specific time to see scoring data at that point.
-                  </Typography>
-                ) : (
-                  <>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Tracked Angles at {(Math.round(videoRef.current!.currentTime * 100) / 100)}s
-                    </Typography>
-                    {scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100))[0].p.map((p, i) => (
-                      <Accordion
-                        key={i}
-                      >
-                        <AccordionSummary
-                          expandIcon={<ExpandMore />}
-                        >
-                          {BODY_LANDMARK_NAMES[p.b]} (from {BODY_LANDMARK_NAMES[p.a]} to {BODY_LANDMARK_NAMES[p.c]})
-                        </AccordionSummary>
-                        <AccordionDetails>
-                          Angle: {Math.round(radToDeg(p.y))}˚, Points: {p.i}
-                        </AccordionDetails>
-                        <AccordionActions>
-                          <Button
-                            onClick={() => {handleDeleteAngle(i)}}
-                          >
-                            Delete
-                          </Button>
-                          <Button
-                            onClick={() => {handleOpenEditPoints(i)}}
-                          >
-                            Edit Points
-                          </Button>
-                        </AccordionActions>
-                      </Accordion>
-                    ))}
-                  </>
-                )}
-                <Typography variant="subtitle1" gutterBottom>
-                  Timestamps with Tracked Data
-                </Typography>
-                {scoreData.map((score, i) => (
-                  <Accordion
-                    key={i}
-                  >
-                    <AccordionSummary
-                      expandIcon={<ExpandMore />}
-                    >
-                      {score.t} second{score.t !== 1 ? 's' : ''}
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      This timestamp has {score.p.length} data point{score.p.length !== 1 ? 's' : ''} that can add up to {score.p.map(x => x.i).reduce((a, b) => a + b)} to the total score
-                    </AccordionDetails>
-                    <AccordionActions>
-                      <Button
-                        onClick={() => {handleDeleteTimestamp(score.t)}}
-                      >
-                        Delete data
-                      </Button>
-                      <Button
-                        onClick={() => {jumpToTimestamp(score.t)}}
-                      >
-                        Jump to {score.t}s
-                      </Button>
-                    </AccordionActions>
-                  </Accordion>
-                ))}
-                <Button
-                  onClick={downloadScoreDataJson}
-                >
-                  Download Score Data (.json)
-                </Button>
-              </Box>
-            )}
-          </Paper>
-        </Box>
-        <center>
-          <Button 
-            fullWidth
-            variant='outlined'
-            sx={{mt: 3, maxWidth: '80vw'}}
-            disabled={scoreData.length === 0}
-            onClick={() => { setHasPublishingDialogOpen(true) }}
+    <Box className="page-container">
+      <Container maxWidth="xl">
+        <div hidden={loading || isSubmitting}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '1fr 1fr',
+              },
+              gap: 3,
+            }}
+            hidden={loading}
           >
-            Add Details & Upload
-          </Button>
-        </center>
-      </div>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
+              <Typography variant="h6" gutterBottom>
+                Camera Feed
+              </Typography>
+              <Box>
+                <div style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  alignItems: 'center',
+                  margin: 'auto'
+                }}>
+                  <video
+                    ref={videoRef}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      maxHeight: '70vh',
+                      borderRadius: 8
+                    }}
+                    autoPlay
+                    playsInline
+                  />
+                  <canvas
+                    ref={canvasRef}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      maxHeight: '70vh',
+                      borderRadius: 8,
+                      imageRendering: 'crisp-edges'
+                    }}
+                    width={videoRef.current?.videoWidth ?? 600}
+                    height={videoRef.current?.videoHeight ?? 400}
+                    onClick={handleCanvasClick}
+                  />
+                {(landmarkSelection != null && gPose.current) ? (
+                  <div
+                    style = {{
+                      position: 'absolute',
+                      zIndex: 2,
+                      top: landmarkSelection?.clickY || 0,
+                      left: landmarkSelection?.clickX || 0
+                    }}
+                  >
+                    <Paper elevation={3} sx={{ p: 2, width: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
+                      <Typography variant="h6" >
+                        {BODY_LANDMARK_NAMES[landmarkSelection.landmarkIndex]}
+                      </Typography>
+                      <Typography variant="caption" gutterBottom>
+                        Angle: {Math.round(radToDeg(getLandmarkAngle(
+                          gPose.current[landmarkSelection.landmarkIndex],
+                          gPose.current[landmarkSelection.startIndex],
+                          gPose.current[landmarkSelection.endIndex]
+                        )))}˚
+                      </Typography>
+                      <div style={{
+                        gap: 10,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        width: '100%'
+                      }}>
+                        <FormControl variant="standard" fullWidth>
+                          <InputLabel id="start-angle-selector">Start Point</InputLabel>
+                          <Select
+                            labelId="start-angle-selector"
+                            value={landmarkSelection.startIndex + ''}
+                            variant="standard"
+                            label="Start Point"
+                            onChange={handleSelectStartAngle}
+                          >
+                            {getConnectedLandmarks(landmarkSelection.landmarkIndex, []).map(x => (
+                              <MenuItem value={x} key={x}>
+                                {BODY_LANDMARK_NAMES[x]}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        <FormControl variant="standard" fullWidth>
+                          <InputLabel id="end-angle-selector">End Point</InputLabel>
+                          <Select
+                            labelId="end-angle-selector"
+                            value={landmarkSelection.endIndex + ''}
+                            variant="standard"
+                            label="End Point"
+                            onChange={handleSelectEndAngle}
+                          >
+                            {getConnectedLandmarks(landmarkSelection.landmarkIndex, []).map(x => (
+                              <MenuItem value={x} key={x}>
+                                {BODY_LANDMARK_NAMES[x]}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        <FormControl variant="standard" fullWidth>
+                          <TextField
+                            label="Points"
+                            variant="standard"
+                            value={landmarkSelection.points}
+                            onChange={handleChangePoints}
+                          />
+                        </FormControl>
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'right',
+                          gap: 5
+                        }}>
+                          <Button
+                            variant="outlined"
+                            style={{
+                              width: '100%'
+                            }}
+                            onClick={cancelLandmarkSelection}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            style={{
+                              width: '100%'
+                            }}
+                            disabled={landmarkSelection.startIndex === landmarkSelection.endIndex}
+                            onClick={saveLandmarkSelection}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    </Paper>
+                  </div>
+                ) : ''}
+              </div>
+              </Box>
+              <input
+                type="range"
+                min={0}
+                max={videoRef.current?.duration}
+                onChange={updateVideoTime}
+                ref={sliderRef}
+                step={0.01}
+                style={{
+                  width: '100%'
+                }}
+              />
+              <IconButton aria-label="Pause" onClick={togglePause}>
+                {paused ? (
+                  <PlayArrow />
+                ) : (
+                  <Pause />
+                )}
+              </IconButton>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={fittingEnabled}
+                      onClick={toggleFittingEnabled}
+                    />
+                  }
+                  label="Enable fitting while paused" 
+                />
+              </FormGroup>
+              <Typography>
+                Note: Points cannot be selected while fitting is enabled. We recommend enabling it temporarily to readjust angles before adding them.
+              </Typography>
+            </Paper>
+
+            <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
+              <Typography variant="h6">
+                Tracking Points
+              </Typography>
+              {(scoreData.length === 0 || !videoRef.current) ? (
+                <Typography variant="body1" gutterBottom>
+                  To get started, pause the video at times you want to add scoring to. Then, click on each point you want to track, enter the scoring information
+                  you would like to use, and hit save.
+                </Typography>
+              ) : (
+                <Box sx={{ width: '100%', p: 2, textAlign: 'left' }}>
+                  {(!paused || scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100)).length === 0) ? (
+                    <Typography variant="body1" gutterBottom>
+                      Pause or jump to a specific time to see scoring data at that point.
+                    </Typography>
+                  ) : (
+                    <>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Tracked Angles at {(Math.round(videoRef.current!.currentTime * 100) / 100)}s
+                      </Typography>
+                      {scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100))[0].p.map((p, i) => (
+                        <Accordion
+                          key={i}
+                        >
+                          <AccordionSummary
+                            expandIcon={<ExpandMore />}
+                          >
+                            {BODY_LANDMARK_NAMES[p.b]} (from {BODY_LANDMARK_NAMES[p.a]} to {BODY_LANDMARK_NAMES[p.c]})
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            Angle: {Math.round(radToDeg(p.y))}˚, Points: {p.i}
+                          </AccordionDetails>
+                          <AccordionActions>
+                            <Button
+                              onClick={() => {handleDeleteAngle(i)}}
+                            >
+                              Delete
+                            </Button>
+                            <Button
+                              onClick={() => {handleOpenEditPoints(i)}}
+                            >
+                              Edit Points
+                            </Button>
+                          </AccordionActions>
+                        </Accordion>
+                      ))}
+                    </>
+                  )}
+                  <Typography variant="subtitle1" gutterBottom>
+                    Timestamps with Tracked Data
+                  </Typography>
+                  {scoreData.map((score, i) => (
+                    <Accordion
+                      key={i}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                      >
+                        {score.t} second{score.t !== 1 ? 's' : ''}
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        This timestamp has {score.p.length} data point{score.p.length !== 1 ? 's' : ''} that can add up to {score.p.map(x => x.i).reduce((a, b) => a + b)} to the total score
+                      </AccordionDetails>
+                      <AccordionActions>
+                        <Button
+                          onClick={() => {handleDeleteTimestamp(score.t)}}
+                        >
+                          Delete data
+                        </Button>
+                        <Button
+                          onClick={() => {jumpToTimestamp(score.t)}}
+                        >
+                          Jump to {score.t}s
+                        </Button>
+                      </AccordionActions>
+                    </Accordion>
+                  ))}
+                  <Button
+                    onClick={downloadScoreDataJson}
+                  >
+                    Download Score Data (.json)
+                  </Button>
+                </Box>
+              )}
+            </Paper>
+          </Box>
+          <center>
+            <Button 
+              fullWidth
+              variant='outlined'
+              sx={{mt: 3, maxWidth: '80vw'}}
+              disabled={scoreData.length === 0}
+              onClick={() => { setHasPublishingDialogOpen(true) }}
+            >
+              Add Details & Upload
+            </Button>
+          </center>
+        </div>
+      </Container>
+      <Container maxWidth="lg">
         <div hidden={!loading}>
           <Typography variant="h4" gutterBottom>
             Dance Uploader
@@ -828,7 +830,7 @@ const DanceEditor = () => {
           ) : ''}
         </>
       ) : ''}
-    </Container>
+    </Box>
   );
 };
 
