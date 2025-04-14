@@ -2,8 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import Features from './pages/Features';
 import Workout from './pages/Workout';
 import CreateDance from './pages/CreateDance';
 import Profile from './pages/Profile';
@@ -16,11 +18,13 @@ import LiveVideoScoreDebugger from './pages/debug/LiveVideoScoreDebugger';
 import GradeDebugger from './pages/debug/GradeDebugger';
 import ImagePoseTracking from './pages/debug/ImagePoseTracking';
 import BetaDanceBattle from './pages/BetaDanceBattle';
+import DanceBattle from './pages/debug/DanceBattle';
 import { UserProvider, useUser } from './contexts/UserContext';
 import PricingOverview from './pages/PricingPanel';
 import './App.css';
 import DanceEditor from './pages/dances/DanceEditor';
 import DancePlayer from './pages/dances/DancePlayer';
+import { NAVBAR_HEIGHT } from './components/Navbar';
 
 const theme = createTheme({
   palette: {
@@ -90,6 +94,15 @@ const theme = createTheme({
   },
 });
 
+const globalStyles = {
+  '.page-container': {
+    minHeight: '100vh',
+    paddingTop: NAVBAR_HEIGHT,
+    backgroundColor: '#000000',
+    color: '#FFFFFF',
+  }
+};
+
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useUser();
   
@@ -104,12 +117,14 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <GlobalStyles styles={globalStyles} />
       <UserProvider>
         <Router>
           <div className="App">
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/features" element={<Features />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path='/pricing' element={<PricingOverview />} />
@@ -125,6 +140,7 @@ function App() {
               <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />
               <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
               <Route path="/debug/grade-debugger" element={<GradeDebugger />} />
+              <Route path="/debug/dance-battle" element={<DanceBattle />} />
             </Routes>
           </div>
         </Router>

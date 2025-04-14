@@ -16,12 +16,149 @@ import {
   MenuItem,
   Button,
   Avatar,
+  Link,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useUser } from '../contexts/UserContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { BugReport } from '@mui/icons-material';
+import styled from '@emotion/styled';
+
+export const NAVBAR_HEIGHT = '80px';
+
+const StyledAppBar = styled(AppBar)`
+  background-color: #000000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: ${NAVBAR_HEIGHT};
+  display: flex;
+  justify-content: center;
+`;
+
+const LogoText = styled(Typography)`
+  font-family: 'Space Mono', monospace;
+  text-decoration: none;
+  color: #FFFFFF;
+  font-size: 1.125rem;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
+const NavLink = styled(Button)`
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 16px;
+  margin: 0 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+
+  &:hover {
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: transparent;
+  }
+` as typeof Button;
+
+const StyledDrawer = styled(Drawer)`
+  .MuiDrawer-paper {
+    background-color: #000000;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    width: 280px;
+  }
+`;
+
+const MobileMenuButton = styled(IconButton)`
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: transparent;
+  }
+`;
+
+const StyledMenu = styled(Menu)`
+  .MuiPaper-root {
+    background-color: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    margin-top: 8px;
+  }
+
+  .MuiMenuItem-root {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 12px 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      color: #FFFFFF;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+`;
+
+const StyledAvatar = styled(Avatar)`
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.3s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+`;
+
+const AuthButtons = styled(Box)`
+  display: flex;
+  gap: 1rem;
+`;
+
+const LoginButton = styled(Button)`
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: transparent;
+  }
+`;
+
+const SignupButton = styled(Button)`
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: #000000;
+  background: #FFFFFF;
+  padding: 8px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+`;
 
 const Navbar = () => {
   const theme = useTheme();
@@ -44,7 +181,7 @@ const Navbar = () => {
     setToolsAnchorEl(null);
   };
 
-  const handleUserMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setUserMenuAnchorEl(event.currentTarget);
   };
 
@@ -79,10 +216,11 @@ const Navbar = () => {
     { text: 'Video Analysis', path: '/debug/video-pose-tracking' },
     { text: 'Image Analysis', path: '/debug/image-pose-tracking' },
     { text: 'Pose Scoring', path: '/debug/grade-debugger' },
+    { text: 'Dance Battle', path: '/debug/dance-battle' },
   ];
 
   const drawer = (
-    <List sx={{ bgcolor: 'background.default', height: '100%' }}>
+    <List>
       {menuItems.map((item) => (
         <ListItem
           key={item.text}
@@ -90,11 +228,12 @@ const Navbar = () => {
           to={item.path}
           onClick={handleDrawerToggle}
           sx={{
-            cursor: 'pointer',
-            color: 'text.primary',
+            color: 'rgba(255, 255, 255, 0.7)',
             textDecoration: 'none',
+            py: 2,
             '&:hover': {
-              color: 'text.secondary',
+              color: '#FFFFFF',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
             },
           }}
         >
@@ -102,9 +241,11 @@ const Navbar = () => {
             primary={item.text}
             primaryTypographyProps={{
               sx: {
-                fontSize: '1rem',
+                fontFamily: 'Space Mono, monospace',
+                fontSize: '0.75rem',
                 fontWeight: 400,
-                letterSpacing: '-0.01em',
+                letterSpacing: 1,
+                textTransform: 'uppercase',
               }
             }}
           />
@@ -112,20 +253,21 @@ const Navbar = () => {
       ))}
       <ListItem
         sx={{
-          color: 'text.primary',
+          color: 'rgba(255, 255, 255, 0.5)',
           mt: 2,
           borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          pt: 2,
+          pt: 3,
         }}
       >
         <ListItemText 
-          primary="Debug"
+          primary="Debug Tools"
           primaryTypographyProps={{
             sx: {
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              letterSpacing: '-0.01em',
-              color: 'text.secondary',
+              fontFamily: 'Space Mono, monospace',
+              fontSize: '0.75rem',
+              fontWeight: 400,
+              letterSpacing: 1,
+              textTransform: 'uppercase',
             }
           }}
         />
@@ -137,12 +279,13 @@ const Navbar = () => {
           to={item.path}
           onClick={handleDrawerToggle}
           sx={{
-            cursor: 'pointer',
-            color: 'text.primary',
+            color: 'rgba(255, 255, 255, 0.7)',
             textDecoration: 'none',
             pl: 4,
+            py: 2,
             '&:hover': {
-              color: 'text.secondary',
+              color: '#FFFFFF',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
             },
           }}
         >
@@ -150,9 +293,11 @@ const Navbar = () => {
             primary={item.text}
             primaryTypographyProps={{
               sx: {
-                fontSize: '0.875rem',
+                fontFamily: 'Space Mono, monospace',
+                fontSize: '0.75rem',
                 fontWeight: 400,
-                letterSpacing: '-0.01em',
+                letterSpacing: 1,
+                textTransform: 'uppercase',
               }
             }}
           />
@@ -162,164 +307,86 @@ const Navbar = () => {
   );
 
   return (
-    <AppBar 
-      position="static" 
-      sx={{ 
-        bgcolor: 'background.default',
-        boxShadow: 'none',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        py: 2,
-      }}
-    >
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Typography
-          component={RouterLink}
-          to="/"
-          sx={{
-            textDecoration: 'none',
-            color: 'text.primary',
-            fontSize: '1rem',
-            fontWeight: 400,
-            letterSpacing: '-0.01em',
-            '&:hover': {
-              color: 'text.secondary',
-            },
-          }}
-        >
-          DanceAR
-        </Typography>
+    <StyledAppBar position="fixed" elevation={0}>
+      <Toolbar sx={{ 
+        justifyContent: 'space-between', 
+        maxWidth: '1200px', 
+        width: '100%', 
+        mx: 'auto', 
+        px: { xs: 2, sm: 4 },
+        height: '100%'
+      }}>
+        <Link component={RouterLink} to="/" sx={{ textDecoration: 'none' }}>
+          <LogoText>
+            DanceAR
+          </LogoText>
+        </Link>
 
         {isMobile ? (
           <>
-            <IconButton
-              color="inherit"
+            <MobileMenuButton
               aria-label="open drawer"
               edge="end"
               onClick={handleDrawerToggle}
-              sx={{
-                '&:hover': {
-                  color: 'text.secondary',
-                },
-              }}
             >
               <MenuIcon />
-            </IconButton>
-            <Drawer
-              variant="temporary"
+            </MobileMenuButton>
+            <StyledDrawer
               anchor="right"
               open={mobileOpen}
               onClose={handleDrawerToggle}
               ModalProps={{
                 keepMounted: true,
               }}
-              PaperProps={{
-                sx: {
-                  bgcolor: 'background.default',
-                  width: 240,
-                }
-              }}
             >
               {drawer}
-            </Drawer>
+            </StyledDrawer>
           </>
         ) : (
-          <Box sx={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {menuItems.map((item) => (
-              <Typography
-                key={item.text}
-                component={RouterLink}
+              <Link 
+                key={item.text} 
+                component={RouterLink} 
                 to={item.path}
-                sx={{
-                  color: 'text.primary',
-                  textDecoration: 'none',
-                  fontSize: '1rem',
-                  fontWeight: 400,
-                  letterSpacing: '-0.01em',
-                  '&:hover': {
-                    color: 'text.secondary',
-                  },
-                }}
+                sx={{ textDecoration: 'none' }}
               >
-                {item.text}
-              </Typography>
+                <NavLink disableRipple>
+                  {item.text}
+                </NavLink>
+              </Link>
             ))}
-            <Button
-              startIcon={<BugReport />}
+            <NavLink
               onClick={handleToolsClick}
-              sx={{
-                color: 'text.primary',
-                textDecoration: 'none',
-                fontSize: '1rem',
-                fontWeight: 400,
-                letterSpacing: '-0.01em',
-                '&:hover': {
-                  color: 'text.secondary',
-                },
-              }}
+              endIcon={<BugReport sx={{ fontSize: 16 }} />}
+              disableRipple
             >
               Debug
-            </Button>
-            <Menu
-              anchorEl={toolsAnchorEl}
-              open={Boolean(toolsAnchorEl)}
-              onClose={handleToolsClose}
-              PaperProps={{
-                sx: {
-                  bgcolor: 'background.default',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }
-              }}
-            >
-              {toolsMenuItems.map((item) => (
-                <MenuItem
-                  key={item.text}
-                  component={RouterLink}
-                  to={item.path}
-                  onClick={handleToolsClose}
-                  sx={{
-                    color: 'text.primary',
-                    '&:hover': {
-                      color: 'text.secondary',
-                    },
-                  }}
-                >
-                  {item.text}
-                </MenuItem>
-              ))}
-            </Menu>
+            </NavLink>
             {user ? (
               <>
-                <IconButton
-                  onClick={handleUserMenuClick}
-                  sx={{
-                    '&:hover': {
-                      color: 'text.secondary',
-                    },
-                  }}
-                >
-                  <Avatar sx={{ width: 32, height: 32 }} />
-                </IconButton>
-                <Menu
+                <StyledAvatar
+                  onClick={handleProfileClick}
+                  src={user.photoURL || undefined}
+                  alt={user.displayName || 'User'}
+                />
+                <StyledMenu
                   anchorEl={userMenuAnchorEl}
                   open={Boolean(userMenuAnchorEl)}
                   onClose={handleUserMenuClose}
-                  PaperProps={{
-                    sx: {
-                      bgcolor: 'background.default',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                    }
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
                   }}
                 >
                   <MenuItem
                     component={RouterLink}
                     to="/profile"
                     onClick={handleUserMenuClose}
-                    sx={{
-                      color: 'text.primary',
-                      '&:hover': {
-                        color: 'text.secondary',
-                      },
-                    }}
                   >
                     Profile
                   </MenuItem>
@@ -329,43 +396,59 @@ const Navbar = () => {
                       handleLogout();
                     }}
                     sx={{
-                      color: 'text.primary',
+                      color: 'error.main',
                       '&:hover': {
-                        color: 'text.secondary',
+                        bgcolor: 'error.dark',
+                        color: 'white',
                       },
                     }}
                   >
                     Logout
                   </MenuItem>
-                </Menu>
+                </StyledMenu>
               </>
             ) : (
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  component={RouterLink}
-                  to="/login"
-                  sx={{
-                    color: 'text.primary',
-                    '&:hover': {
-                      color: 'text.secondary',
-                    },
-                  }}
-                >
-                  Login
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/signup"
-                  variant="contained"
-                >
-                  Sign Up
-                </Button>
-              </Box>
+              <AuthButtons>
+                <Link component={RouterLink} to="/login" sx={{ textDecoration: 'none' }}>
+                  <LoginButton disableRipple>
+                    Login
+                  </LoginButton>
+                </Link>
+                <Link component={RouterLink} to="/signup" sx={{ textDecoration: 'none' }}>
+                  <SignupButton disableRipple>
+                    Sign Up
+                  </SignupButton>
+                </Link>
+              </AuthButtons>
             )}
+            <StyledMenu
+              anchorEl={toolsAnchorEl}
+              open={Boolean(toolsAnchorEl)}
+              onClose={handleToolsClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              {toolsMenuItems.map((item) => (
+                <MenuItem
+                  key={item.text}
+                  component={RouterLink}
+                  to={item.path}
+                  onClick={handleToolsClose}
+                >
+                  {item.text}
+                </MenuItem>
+              ))}
+            </StyledMenu>
           </Box>
         )}
       </Toolbar>
-    </AppBar>
+    </StyledAppBar>
   );
 };
 

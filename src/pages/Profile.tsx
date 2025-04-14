@@ -152,76 +152,72 @@ const Profile = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 6 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-          <Avatar
-            sx={{
-              width: 120,
-              height: 120,
-              bgcolor: 'primary.main',
-              fontSize: '3rem',
-            }}
-          >
-            {user.email?.[0].toUpperCase()}
-          </Avatar>
-          <Box sx={{ ml: 4 }}>
-            <Typography variant="h4" gutterBottom>
-              {user.email}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Member since {user.metadata.creationTime}
-            </Typography>
-          </Box>
-          <Box sx={{ ml: 'auto' }}>
-            <IconButton>
-              <EditIcon />
-            </IconButton>
-          </Box>
-        </Box>
-
-        <Divider sx={{ my: 4 }} />
-
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={handleTabChange}>
-            <Tab label="My Dances" />
-            <Tab label="Favorites" />
-            <Tab label="Settings" />
-          </Tabs>
-        </Box>
-
-        <TabPanel value={tabValue} index={0}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-            <Typography variant="h5">My Dances</Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenUpload(true)}
+    <Box className="page-container">
+      <Container maxWidth="lg">
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+            <Avatar
+              sx={{
+                width: 120,
+                height: 120,
+                bgcolor: 'primary.main',
+                fontSize: '3rem',
+              }}
             >
-              Upload Dance
-            </Button>
+              {user.email?.[0].toUpperCase()}
+            </Avatar>
+            <Box sx={{ ml: 4 }}>
+              <Typography variant="h4" gutterBottom>
+                {user.email}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Member since {user.metadata.creationTime}
+              </Typography>
+            </Box>
+            <Box sx={{ ml: 'auto' }}>
+              <IconButton>
+                <EditIcon />
+              </IconButton>
+            </Box>
           </Box>
-          <DanceGrid dances={dances} onDelete={handleDeleteDance} />
-        </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
-          <Typography variant="h5" gutterBottom>
-            Favorite Dances
-          </Typography>
-          <Typography color="text.secondary">
-            Your favorite dances will appear here
-          </Typography>
-        </TabPanel>
+          <Divider sx={{ my: 4 }} />
 
-        <TabPanel value={tabValue} index={2}>
-          <Typography variant="h5" gutterBottom>
-            Account Settings
-          </Typography>
-          <Typography color="text.secondary">
-            Manage your account settings and preferences
-          </Typography>
-        </TabPanel>
-      </Box>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={tabValue} onChange={handleTabChange}>
+              <Tab label="My Dances" />
+              <Tab label="Favorites" />
+              <Tab label="Settings" />
+            </Tabs>
+          </Box>
+
+          <TabPanel value={tabValue} index={0}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+              <Typography variant="h5">My Dances</Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setOpenUpload(true)}
+              >
+                Upload Dance
+              </Button>
+            </Box>
+            <DanceGrid dances={dances} onDelete={handleDeleteDance} />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={1}>
+            <Typography variant="h6" color="text.secondary" textAlign="center">
+              No favorites yet
+            </Typography>
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={2}>
+            <Typography variant="h6" color="text.secondary" textAlign="center">
+              Settings coming soon
+            </Typography>
+          </TabPanel>
+        </Box>
+      </Container>
 
       <Dialog open={openUpload} onClose={() => setOpenUpload(false)}>
         <DialogTitle>Upload New Dance</DialogTitle>
@@ -237,16 +233,12 @@ const Profile = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenUpload(false)}>Cancel</Button>
-          <Button
-            onClick={handleUploadDance}
-            variant="contained"
-            disabled={loading || !newDanceTitle}
-          >
+          <Button onClick={handleUploadDance} disabled={loading}>
             {loading ? 'Uploading...' : 'Upload'}
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 };
 
