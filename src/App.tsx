@@ -134,6 +134,7 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/beta" element={<PrivateRoute><BetaDanceBattle /></PrivateRoute>} />
               <Route path="/dance/upload" element={<DanceEditor />} />
+              <Route path="/dance/play" element={<DancePlayer />} />
               <Route path="/dance/play/:danceId" element={<DancePlayer />} />
               <Route path="/debug/pose-tracking" element={<PoseTracking />} />
               <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
