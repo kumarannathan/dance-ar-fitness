@@ -35,7 +35,7 @@ const PricingOverview = () => {
               <Typography>Maintain a daily Dance Streak and get notified when it is about to expire</Typography>
             </li>
             <li>
-              <Typography>Upload and publish your own dances for the community</Typography>
+              <Typography>Upload and publish your own dances for the community with up to 1 GB of storage space for your videos</Typography>
             </li>
           </ul>
           <center>
@@ -62,13 +62,16 @@ const PricingOverview = () => {
               <Typography>Get one free Dance Streak revival per month</Typography>
             </li>
             <li>
-              <Typography>Freely request a Streak Pause for vacations or periods of time where you won't be able to access the internet</Typography>
+              <Typography>Streak Pause days can be earned based on the number of likes a published dance receives from the community</Typography>
             </li>
             <li>
               <Typography>Play workouts that feature custom accuracy scoring, including form accuracy for weight training and Pilates</Typography>
             </li>
             <li>
               <Typography>Record your playthrough of dances and workouts and rewatch it with advanced feedback</Typography>
+            </li>
+            <li>
+              <Typography>Upload and publish your own dances for the community with up to 10 GB of storage space for your videos</Typography>
             </li>
           </ul>
           <center>
@@ -95,21 +98,18 @@ const PricingOverview = () => {
           </Typography>
           <ul>
             <li>
-              <Typography>Revives your Dance Streak from where you left off</Typography>
+              <Typography>Revives your Dance Streak from where your last Dance Streak</Typography>
             </li>
             <li>
-              <Typography>Only works once per purchase, ensuring you stay motivated to keep the streak</Typography>
+              <Typography>One revival per purchase, ensuring you stay motivated to keep the streak</Typography>
             </li>
             <li>
-              <Typography>Can only be purchased once per week to prevent abuse</Typography>
-            </li>
-            <li>
-              <Typography>Allows you to restart your streak at any time you feel comfortable to do so</Typography>
+              <Typography>Restart a lost streak when you feel comfortable</Typography>
             </li>
           </ul>
           <Typography variant="body2">
             Note: If you become injured, temporarily unable to complete dances, or unable to play due to a platform
-            outage, please contact our support team who will be happy to grant you a free Dance Streak Revival! Safety is our
+            outage, please contact our support team to apply for a free Dance Streak Revival! Safety is our
             top priority, and we want to ensure users are never encouraged to play when they are injured!
           </Typography>
           <center>
@@ -126,10 +126,8 @@ const PricingOverview = () => {
           </center>
           <Divider sx={{mt: '5px', mb: '20px'}}/>
           <Typography>
-            If you're going away for a while and won't have access to a reliable internet connection, you can pause
-            your Dance Streak while you're away for a specified time frame. To prevent abuse, you will also need to
-            explain the reason you need a Streak Pause at time of purchase, which will be reviewed by our support
-            staff to determine if you are eligible.
+            Going on vacation? Experiencing an internet outage? Or just simply need a break? You can pause
+            your Dance Streak while you're away for a specified time frame.
           </Typography>
           <ul>
             <li>
@@ -148,14 +146,9 @@ const PricingOverview = () => {
               <Typography>Free for DanceAR Premium members!</Typography>
             </li>
           </ul>
-          <Typography variant="body2">
-            Note: Similar to Dance Streak Revivals, our support staff will also give you a Streak Pause at no
-            cost if you experience an unexpected injury that prevents you from playing so you don't have to
-            worry about your Dance Streak while you recover!
-          </Typography>
           <center>
             <Typography variant="h6" sx={{mt: '10px'}}>
-              $0.50 per day paused (up to $5.00)
+              $0.50 per day paused
             </Typography>
           </center>
         </Paper>
