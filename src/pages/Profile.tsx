@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -60,12 +60,11 @@ interface Dance {
 }
 
 const Profile = () => {
+  const navigate = useNavigate();
+
   const { user } = useUser();
   const [tabValue, setTabValue] = useState(0);
   const [dances, setDances] = useState<Dance[]>([]);
-  const [openUpload, setOpenUpload] = useState(false);
-  const [newDanceTitle, setNewDanceTitle] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const fetchDances = useCallback(async () => {
     if (!user) return;
@@ -113,37 +112,6 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Error deleting dance:', error);
-    }
-  };
-
-  const handleUploadDance = async () => {
-    if (!user || !newDanceTitle) return;
-
-    setLoading(true);
-    try {
-      // Here you would typically:
-      // 1. Upload the video file to Firebase Storage
-      // 2. Create a thumbnail
-      // 3. Save the metadata to Firestore
-      
-      // For now, we'll just create a placeholder
-      const newDance = {
-        userId: user.uid,
-        title: newDanceTitle,
-        thumbnailUrl: 'https://via.placeholder.com/300x200',
-        createdAt: new Date(),
-        duration: '0:00',
-        videoUrl: '',
-      };
-
-      await addDoc(collection(db, 'dances'), newDance);
-      setDances([...dances, { id: 'temp', ...newDance }]);
-      setOpenUpload(false);
-      setNewDanceTitle('');
-    } catch (error) {
-      console.error('Error uploading dance:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -197,7 +165,7 @@ const Profile = () => {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => setOpenUpload(true)}
+                onClick={() => navigate('/dance/upload')}
               >
                 Upload Dance
               </Button>
@@ -218,26 +186,6 @@ const Profile = () => {
           </TabPanel>
         </Box>
       </Container>
-
-      <Dialog open={openUpload} onClose={() => setOpenUpload(false)}>
-        <DialogTitle>Upload New Dance</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Dance Title"
-            fullWidth
-            value={newDanceTitle}
-            onChange={(e) => setNewDanceTitle(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenUpload(false)}>Cancel</Button>
-          <Button onClick={handleUploadDance} disabled={loading}>
-            {loading ? 'Uploading...' : 'Upload'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
