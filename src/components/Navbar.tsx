@@ -305,7 +305,7 @@ const Navbar = () => {
   );
 
   return (
-    <StyledAppBar position="sticky" elevation={0}>
+    <StyledAppBar position="static" elevation={0}>
       <Toolbar sx={{ 
         justifyContent: 'space-between', 
         maxWidth: '1200px', 

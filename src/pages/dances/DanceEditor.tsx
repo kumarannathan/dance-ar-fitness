@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, FilesetResolver, Landmark, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Alert, Box, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { BODY_LANDMARK_NAMES, getConnectedLandmarks, getLandmarkAngle, getLandmarkEligibleConnections, isLandmarkEligibleForAngles, ScoringPoseData } from '../../utils/landmark';
+import { BASIC_SCORING_CONNECTIONS, BODY_LANDMARK_NAMES, getConnectedLandmarks, getLandmarkAngle, getLandmarkEligibleConnections, isLandmarkEligibleForAngles, ScoringPoseData } from '../../utils/landmark';
 import { getEuclideanDistance, radToDeg } from '../../utils/math';
 import { ExpandMore, Pause, PlayArrow, UploadFile } from '@mui/icons-material';
 import { FirestoreDanceTrackObject } from '../../types/firestoreDataTypes';
@@ -9,6 +9,8 @@ import { useUser } from '../../contexts/UserContext';
 import { uploadVideo } from '../../utils/videoUpload';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../../firebase';
+
+const BASIC_EDITOR_DANCE_CAPTURE_INTERVAL = 3.0;
 
 interface BodyLandmarkSelectionDetails extends Landmark {
   landmarkIndex: number;
@@ -27,6 +29,9 @@ interface DanceScoringDataPoints {
 
 const DanceEditor = () => {
   const { user } = useUser();
+
+  const [isBasicEditing, setIsBasicEditing] = useState(true);
+  const [basicEditComplete, setBasicEditComplete] = useState(false);
 
   const [landmarker, setLandmarker] = useState<PoseLandmarker|null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -59,6 +64,7 @@ const DanceEditor = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sliderRef = useRef<HTMLInputElement>(null);
   const gVideoFrame = useRef(0);
+  const gLastProcessedTime = useRef(0);
   const gPose = useRef<Landmark[]>([]);
 
   const drawPose = useCallback((landmark: Landmark[]) => {
@@ -90,6 +96,28 @@ const DanceEditor = () => {
     }
   }, [landmarkSelection]);
 
+  const captureCurrentFrame = useCallback((landmark: Landmark[], time: number) => {
+    // TODO: experiment with custom importance based on how different each joint is from its
+    // "standing still" variant
+    const updatedScoring = BASIC_SCORING_CONNECTIONS;
+    for (const updatedScorePose of updatedScoring) {
+      updatedScorePose.y = getLandmarkAngle(
+        landmark[updatedScorePose.b],
+        landmark[updatedScorePose.a],
+        landmark[updatedScorePose.c]
+      );
+    }
+    
+    const updatedScoreData = scoreData;
+    updatedScoreData.push({
+      t: (Math.round(time * 100) / 100),
+      p: updatedScoring,
+      _poseAtTimestamp: landmark
+    });
+    setScoreData(updatedScoreData);
+
+  }, [scoreData]);
+
   useEffect(() => {
     if (loading) return;
     let cancel = false;
@@ -100,22 +128,41 @@ const DanceEditor = () => {
       if (cancel || (paused && !fittingEnabled)) {
         return;
       }
-      if (!landmarker || !videoRef.current || !sliderRef.current) {
+      if (!landmarker || !videoRef.current) {
         window.requestAnimationFrame(processVideo);
         return;
       }
-      let nextFrame = videoFrame++;
-      if (videoFrame > gVideoFrame.current) {
-        gVideoFrame.current = videoFrame + 1;
+      let frameTime = videoRef.current.currentTime;
+      if (videoRef.current.ended) {
+        if (isBasicEditing) {
+          console.log('basic edit complete?');
+          setBasicEditComplete(true);
+        } else {
+          setPaused(true);
+        }
       }
-      landmarker.detectForVideo(videoRef.current, nextFrame, (result) => {
+      if (frameTime <= gVideoFrame.current) {
+        window.requestAnimationFrame(processVideo);
+        return;
+      }
+      gVideoFrame.current = frameTime;
+      landmarker.detectForVideo(videoRef.current, frameTime * 1000, (result) => {
         if (result.landmarks.length === 0) return;
         const landmark = result.landmarks[0];
         gPose.current = landmark;
         drawPose(landmark);
+
+        if (!isBasicEditing || gLastProcessedTime.current + BASIC_EDITOR_DANCE_CAPTURE_INTERVAL > frameTime) {
+          return;
+        }
+
+        gLastProcessedTime.current = frameTime;
+        captureCurrentFrame(landmark, frameTime);
       });
 
-      sliderRef.current.value = '' + videoRef.current.currentTime;
+      if (sliderRef.current) {
+        sliderRef.current.value = '' + videoRef.current.currentTime;
+      }
       window.requestAnimationFrame(processVideo);
     };
     window.requestAnimationFrame(processVideo);
@@ -139,6 +186,7 @@ const DanceEditor = () => {
     const localVideoUrl = URL.createObjectURL(videoFile);
 
     videoRef.current.src = localVideoUrl;
+    videoRef.current.load();
 
     const loadPoseTracking = async () => {
       const vision = await FilesetResolver.forVisionTasks(
@@ -149,14 +197,17 @@ const DanceEditor = () => {
         vision,
         {
           baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
-            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task"
+            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task"
           },
           runningMode: 'VIDEO'
         }
       );
       setLandmarker(poseLandmarker);
       setLoading(false);
+      if (videoRef.current) {
+        videoRef.current.play();
+      }
     };
 
     // setVideoFile(videoFile);
@@ -395,7 +446,7 @@ const DanceEditor = () => {
     setUploadDetails(finalUploadDetails);
     setSubmissionFailure(false);
     setSubmissionComplete(true);
-  }
+  };
 
   return (
     <Box className="page-container">
@@ -414,7 +465,7 @@ const DanceEditor = () => {
           >
             <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
               <Typography variant="h6" gutterBottom>
-                Camera Feed
+                Video Timeline
               </Typography>
               <Box>
                 <div style={{
@@ -431,7 +482,7 @@ const DanceEditor = () => {
                       maxHeight: '70vh',
                       borderRadius: 8
                     }}
-                    autoPlay
+                    muted={isBasicEditing}
                     playsInline
                   />
                   <canvas
@@ -547,137 +598,182 @@ const DanceEditor = () => {
                 ) : ''}
               </div>
               </Box>
-              <input
-                type="range"
-                min={0}
-                max={videoRef.current?.duration}
-                onChange={updateVideoTime}
-                ref={sliderRef}
-                step={0.01}
-                style={{
-                  width: '100%'
-                }}
-              />
-              <IconButton aria-label="Pause" onClick={togglePause}>
-                {paused ? (
-                  <PlayArrow />
-                ) : (
-                  <Pause />
-                )}
-              </IconButton>
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox 
-                      checked={fittingEnabled}
-                      onClick={toggleFittingEnabled}
+              {!isBasicEditing ? (
+                <>
+                  <input
+                    type="range"
+                    min={0}
+                    max={videoRef.current?.duration}
+                    onChange={updateVideoTime}
+                    ref={sliderRef}
+                    step={0.01}
+                    style={{
+                      width: '100%'
+                    }}
+                  />
+                  <IconButton aria-label="Pause" onClick={togglePause}>
+                    {paused ? (
+                      <PlayArrow />
+                    ) : (
+                      <Pause />
+                    )}
+                  </IconButton>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox 
+                          checked={fittingEnabled}
+                          onClick={toggleFittingEnabled}
+                        />
+                      }
+                      label="Enable fitting while paused" 
                     />
-                  }
-                  label="Enable fitting while paused" 
-                />
-              </FormGroup>
-              <Typography>
-                Note: Points cannot be selected while fitting is enabled. We recommend enabling it temporarily to readjust angles before adding them.
-              </Typography>
+                  </FormGroup>
+                  <Typography>
+                    Note: Points cannot be selected while fitting is enabled. We recommend enabling it temporarily to readjust angles before adding them.
+                  </Typography>
+                </>
+              ) : ''}
             </Paper>
 
-            <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
-              <Typography variant="h6">
-                Tracking Points
-              </Typography>
-              {(scoreData.length === 0 || !videoRef.current) ? (
-                <Typography variant="body1" gutterBottom>
-                  To get started, pause the video at times you want to add scoring to. Then, click on each point you want to track, enter the scoring information
-                  you would like to use, and hit save.
-                </Typography>
-              ) : (
-                <Box sx={{ width: '100%', p: 2, textAlign: 'left' }}>
-                  {(!paused || scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100)).length === 0) ? (
-                    <Typography variant="body1" gutterBottom>
-                      Pause or jump to a specific time to see scoring data at that point.
+            {isBasicEditing ? (
+              <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, bgcolor: 'background.paper' }}>
+                {basicEditComplete ? (
+                  <>
+                    <Typography variant='h5'>
+                      Video Processed!
                     </Typography>
-                  ) : (
-                    <>
-                      <Typography variant="subtitle1" gutterBottom>
-                        Tracked Angles at {(Math.round(videoRef.current!.currentTime * 100) / 100)}s
-                      </Typography>
-                      {scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100))[0].p.map((p, i) => (
-                        <Accordion
-                          key={i}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMore />}
-                          >
-                            {BODY_LANDMARK_NAMES[p.b]} (from {BODY_LANDMARK_NAMES[p.a]} to {BODY_LANDMARK_NAMES[p.c]})
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            Angle: {Math.round(radToDeg(p.y))}˚, Points: {p.i}
-                          </AccordionDetails>
-                          <AccordionActions>
-                            <Button
-                              onClick={() => {handleDeleteAngle(i)}}
-                            >
-                              Delete
-                            </Button>
-                            <Button
-                              onClick={() => {handleOpenEditPoints(i)}}
-                            >
-                              Edit Points
-                            </Button>
-                          </AccordionActions>
-                        </Accordion>
-                      ))}
-                    </>
-                  )}
-                  <Typography variant="subtitle1" gutterBottom>
-                    Timestamps with Tracked Data
-                  </Typography>
-                  {scoreData.map((score, i) => (
-                    <Accordion
-                      key={i}
+                    <Typography variant='body1'>
+                      We have finished analyzing your video and it is now ready to publish!
+                    </Typography>
+                    <Button
+                      variant='outlined'
+                      onClick={() => setHasPublishingDialogOpen(true)}
                     >
-                      <AccordionSummary
-                        expandIcon={<ExpandMore />}
+                      Publish Video
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <CircularProgress />
+                    <Typography variant='h5'>
+                      Processing...
+                    </Typography>
+                    <Typography variant='body1'>
+                      Your video is currently being analyzed to create scores. For the best results, please keep this tab open and active while we process your video! This process usually takes
+                      about as long as the video itself.
+                    </Typography>
+                    {window.location.hostname.includes('localhost') ? (
+                      <Button
+                        onClick={() => setIsBasicEditing(false)}
                       >
-                        {score.t} second{score.t !== 1 ? 's' : ''}
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        This timestamp has {score.p.length} data point{score.p.length !== 1 ? 's' : ''} that can add up to {score.p.map(x => x.i).reduce((a, b) => a + b)} to the total score
-                      </AccordionDetails>
-                      <AccordionActions>
-                        <Button
-                          onClick={() => {handleDeleteTimestamp(score.t)}}
+                        [DEV ONLY] Switch to advanced mode
+                      </Button>
+                    ) : ''}
+                  </>
+                )}
+              </Paper>
+            ) : (
+              <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: 'background.paper' }}>
+                <Typography variant="h6">
+                  Tracking Points
+                </Typography>
+                {(scoreData.length === 0 || !videoRef.current) ? (
+                  <Typography variant="body1" gutterBottom>
+                    To get started, pause the video at times you want to add scoring to. Then, click on each point you want to track, enter the scoring information
+                    you would like to use, and hit save.
+                  </Typography>
+                ) : (
+                  <Box sx={{ width: '100%', p: 2, textAlign: 'left' }}>
+                    {(!paused || scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100)).length === 0) ? (
+                      <Typography variant="body1" gutterBottom>
+                        Pause or jump to a specific time to see scoring data at that point.
+                      </Typography>
+                    ) : (
+                      <>
+                        <Typography variant="subtitle1" gutterBottom>
+                          Tracked Angles at {(Math.round(videoRef.current!.currentTime * 100) / 100)}s
+                        </Typography>
+                        {scoreData.filter(x => x.t === (Math.round(videoRef.current!.currentTime * 100) / 100))[0].p.map((p, i) => (
+                          <Accordion
+                            key={i}
+                          >
+                            <AccordionSummary
+                              expandIcon={<ExpandMore />}
+                            >
+                              {BODY_LANDMARK_NAMES[p.b]} (from {BODY_LANDMARK_NAMES[p.a]} to {BODY_LANDMARK_NAMES[p.c]})
+                            </AccordionSummary>
+                            <AccordionDetails>
+                              Angle: {Math.round(radToDeg(p.y))}˚, Points: {p.i}
+                            </AccordionDetails>
+                            <AccordionActions>
+                              <Button
+                                onClick={() => {handleDeleteAngle(i)}}
+                              >
+                                Delete
+                              </Button>
+                              <Button
+                                onClick={() => {handleOpenEditPoints(i)}}
+                              >
+                                Edit Points
+                              </Button>
+                            </AccordionActions>
+                          </Accordion>
+                        ))}
+                      </>
+                    )}
+                    <Typography variant="subtitle1" gutterBottom>
+                      Timestamps with Tracked Data
+                    </Typography>
+                    {scoreData.map((score, i) => (
+                      <Accordion
+                        key={i}
+                      >
+                        <AccordionSummary
+                          expandIcon={<ExpandMore />}
                         >
-                          Delete data
-                        </Button>
-                        <Button
-                          onClick={() => {jumpToTimestamp(score.t)}}
-                        >
-                          Jump to {score.t}s
-                        </Button>
-                      </AccordionActions>
-                    </Accordion>
-                  ))}
-                  <Button
-                    onClick={downloadScoreDataJson}
-                  >
-                    Download Score Data (.json)
-                  </Button>
-                </Box>
-              )}
-            </Paper>
+                          {score.t} second{score.t !== 1 ? 's' : ''}
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          This timestamp has {score.p.length} data point{score.p.length !== 1 ? 's' : ''} that can add up to {score.p.map(x => x.i).reduce((a, b) => a + b)} to the total score
+                        </AccordionDetails>
+                        <AccordionActions>
+                          <Button
+                            onClick={() => {handleDeleteTimestamp(score.t)}}
+                          >
+                            Delete data
+                          </Button>
+                          <Button
+                            onClick={() => {jumpToTimestamp(score.t)}}
+                          >
+                            Jump to {score.t}s
+                          </Button>
+                        </AccordionActions>
+                      </Accordion>
+                    ))}
+                    <Button
+                      onClick={downloadScoreDataJson}
+                    >
+                      Download Score Data (.json)
+                    </Button>
+                  </Box>
+                )}
+              </Paper>
+            )}
           </Box>
-          <center>
-            <Button 
-              fullWidth
-              variant='outlined'
-              sx={{mt: 3, maxWidth: '80vw'}}
-              disabled={scoreData.length === 0}
-              onClick={() => { setHasPublishingDialogOpen(true) }}
-            >
-              Add Details & Upload
-            </Button>
-          </center>
+          {!isBasicEditing ? (
+            <center>
+              <Button 
+                fullWidth
+                variant='outlined'
+                sx={{mt: 3, maxWidth: '80vw'}}
+                disabled={isBasicEditing ? !basicEditComplete : scoreData.length === 0}
+                onClick={() => { setHasPublishingDialogOpen(true) }}
+              >
+                Add Details & Upload
+              </Button>
+            </center>
+          ) : ''}
         </div>
       </Container>
       <Container maxWidth="lg">

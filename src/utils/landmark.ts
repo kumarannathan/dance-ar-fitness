@@ -89,6 +89,51 @@ export interface ScoringPoseData {
   i: number;
 };
 
+export const BASIC_SCORING_CONNECTIONS: ScoringPoseData[] = [
+  {
+    a: BodyLandmarkType.LeftHip,
+    b: BodyLandmarkType.LeftKnee,
+    c: BodyLandmarkType.LeftFootIndex,
+    y: Math.PI,
+    i: 100
+  },
+  {
+    a: BodyLandmarkType.RightHip,
+    b: BodyLandmarkType.RightKnee,
+    c: BodyLandmarkType.RightFootIndex,
+    y: Math.PI,
+    i: 100
+  },
+  {
+    a: BodyLandmarkType.RightHip,
+    b: BodyLandmarkType.RightShoulder,
+    c: BodyLandmarkType.RightElbow,
+    y: 0,
+    i: 100
+  },
+  {
+    a: BodyLandmarkType.RightShoulder,
+    b: BodyLandmarkType.RightElbow,
+    c: BodyLandmarkType.RightWrist,
+    y: Math.PI,
+    i: 100
+  },
+  {
+    a: BodyLandmarkType.LeftHip,
+    b: BodyLandmarkType.LeftShoulder,
+    c: BodyLandmarkType.LeftElbow,
+    y: 0,
+    i: 100
+  },
+  {
+    a: BodyLandmarkType.LeftShoulder,
+    b: BodyLandmarkType.LeftElbow,
+    c: BodyLandmarkType.LeftWrist,
+    y: Math.PI,
+    i: 100
+  }
+];
+
 export const getConnectedLandmarks = (landmark: number, detectedLandmarks: Landmark[]) => {
   return PoseLandmarker.POSE_CONNECTIONS
     .filter((x) => (x.start === landmark || x.end === landmark))
