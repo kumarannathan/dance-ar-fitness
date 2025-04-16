@@ -133,7 +133,7 @@ const DanceEditor = () => {
         return;
       }
       let frameTime = videoRef.current.currentTime;
-      if (videoRef.current.ended) {
+      if (frameTime > 0.5 && videoRef.current.ended) {
         if (isBasicEditing) {
           console.log('basic edit complete?');
           setBasicEditComplete(true);
