@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   AppBar,
@@ -22,9 +22,14 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useUser } from '../contexts/UserContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
-import { BugReport } from '@mui/icons-material';
+import { BugReport, People, PersonAdd } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import zIndex from '@mui/material/styles/zIndex';
+import FriendSearch from './FriendSearch';
+import FriendsList from './FriendsList';
+import ChatIcon from '@mui/icons-material/Chat';
+import PeopleIcon from '@mui/icons-material/People';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 export const NAVBAR_HEIGHT = '80px';
 
@@ -34,6 +39,14 @@ const StyledAppBar = styled(AppBar)`
   height: ${NAVBAR_HEIGHT};
   display: flex;
   justify-content: center;
+`;
+
+const StyledToolbar = styled(Toolbar)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 24px;
 `;
 
 const LogoText = styled(Typography)`
@@ -169,6 +182,8 @@ const Navbar = () => {
   const [userMenuAnchorEl, setUserMenuAnchorEl] = React.useState<null | HTMLElement>(null);
   const { user } = useUser();
   const navigate = useNavigate();
+  const [friendSearchOpen, setFriendSearchOpen] = useState(false);
+  const [friendsListOpen, setFriendsListOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -201,12 +216,10 @@ const Navbar = () => {
 
   const menuItems = [
     { text: 'Home', path: '/' },
-    { text: 'Blog', path: '/blog' },
+    { text: 'For You', path: '/fyp' },
+    { text: 'Upload Dance', path: '/dance/upload' },
+    { text: 'Dance Battle', path: '/debug/dance-battle' },
     { text: 'Pricing', path: '/pricing' },
-    ...(user ? [
-      { text: 'Upload Dance', path: '/dance/upload' },
-      { text: 'Profile', path: '/profile' },
-    ] : []),
   ];
 
   const toolsMenuItems = [
@@ -214,7 +227,6 @@ const Navbar = () => {
     { text: 'Video Analysis', path: '/debug/video-pose-tracking' },
     { text: 'Image Analysis', path: '/debug/image-pose-tracking' },
     { text: 'Pose Scoring', path: '/debug/grade-debugger' },
-    { text: 'Dance Battle', path: '/debug/dance-battle' },
   ];
 
   const drawer = (
@@ -305,20 +317,16 @@ const Navbar = () => {
   );
 
   return (
-    <StyledAppBar position="static" elevation={0}>
-      <Toolbar sx={{ 
-        justifyContent: 'space-between', 
-        maxWidth: '1200px', 
-        width: '100%', 
-        mx: 'auto', 
-        px: { xs: 2, sm: 4 },
-        height: '100%'
-      }}>
-        <Link component={RouterLink} to="/" sx={{ textDecoration: 'none' }}>
-          <LogoText>
-            DanceAR
-          </LogoText>
-        </Link>
+    <StyledAppBar position="fixed">
+      <StyledToolbar>
+        {/* Left section - Logo */}
+        <Box sx={{ width: '200px' }}>
+          <Link component={RouterLink} to="/" sx={{ textDecoration: 'none' }}>
+            <LogoText>
+              DanceAR
+            </LogoText>
+          </Link>
+        </Box>
 
         {isMobile ? (
           <>
@@ -341,111 +349,123 @@ const Navbar = () => {
             </StyledDrawer>
           </>
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {menuItems.map((item) => (
-              <Link 
-                key={item.text} 
-                component={RouterLink} 
-                to={item.path}
-                sx={{ textDecoration: 'none' }}
-              >
-                <NavLink disableRipple>
-                  {item.text}
-                </NavLink>
-              </Link>
-            ))}
-            <NavLink
-              onClick={handleToolsClick}
-              endIcon={<BugReport sx={{ fontSize: 16 }} />}
-              disableRipple
-            >
-              Debug
-            </NavLink>
-            {user ? (
-              <>
-                <StyledAvatar
-                  onClick={handleProfileClick}
-                  src={user.photoURL || undefined}
-                  alt={user.displayName || 'User'}
-                />
-                <StyledMenu
-                  anchorEl={userMenuAnchorEl}
-                  open={Boolean(userMenuAnchorEl)}
-                  onClose={handleUserMenuClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                >
-                  <MenuItem
-                    component={RouterLink}
-                    to="/profile"
-                    onClick={handleUserMenuClose}
-                  >
-                    Profile
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => {
-                      handleUserMenuClose();
-                      handleLogout();
-                    }}
-                    sx={{
-                      color: 'error.main',
-                      '&:hover': {
-                        bgcolor: 'error.dark',
-                        color: 'white',
-                      },
-                    }}
-                  >
-                    Logout
-                  </MenuItem>
-                </StyledMenu>
-              </>
-            ) : (
-              <AuthButtons>
-                <Link component={RouterLink} to="/login" sx={{ textDecoration: 'none' }}>
-                  <LoginButton disableRipple>
-                    Login
-                  </LoginButton>
-                </Link>
-                <Link component={RouterLink} to="/signup" sx={{ textDecoration: 'none' }}>
-                  <SignupButton disableRipple>
-                    Sign Up
-                  </SignupButton>
-                </Link>
-              </AuthButtons>
-            )}
-            <StyledMenu
-              anchorEl={toolsAnchorEl}
-              open={Boolean(toolsAnchorEl)}
-              onClose={handleToolsClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-            >
-              {toolsMenuItems.map((item) => (
-                <MenuItem
-                  key={item.text}
-                  component={RouterLink}
+          <>
+            {/* Center section - Navigation */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              justifyContent: 'center',
+              flex: 1
+            }}>
+              {menuItems.map((item) => (
+                <Link 
+                  key={item.text} 
+                  component={RouterLink} 
                   to={item.path}
-                  onClick={handleToolsClose}
+                  sx={{ textDecoration: 'none' }}
                 >
-                  {item.text}
-                </MenuItem>
+                  <NavLink disableRipple>
+                    {item.text}
+                  </NavLink>
+                </Link>
               ))}
-            </StyledMenu>
-          </Box>
+            </Box>
+
+            {/* Right section - Profile and Friends */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {user ? (
+                <>
+                  <IconButton 
+                    color="inherit" 
+                    onClick={() => setFriendSearchOpen(true)}
+                    sx={{ mr: 1 }}
+                  >
+                    <PersonAddIcon />
+                  </IconButton>
+                  <IconButton 
+                    color="inherit" 
+                    onClick={() => setFriendsListOpen(true)}
+                    sx={{ mr: 1 }}
+                  >
+                    <PeopleIcon />
+                  </IconButton>
+                  <IconButton 
+                    color="inherit" 
+                    onClick={() => navigate('/chat')}
+                    sx={{ mr: 1 }}
+                  >
+                    <ChatIcon />
+                  </IconButton>
+                  <StyledAvatar
+                    onClick={handleProfileClick}
+                    src={user?.photoURL || undefined}
+                    alt={user?.displayName || 'User'}
+                  />
+                  <StyledMenu
+                    anchorEl={userMenuAnchorEl}
+                    open={Boolean(userMenuAnchorEl)}
+                    onClose={handleUserMenuClose}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                  >
+                    <MenuItem
+                      component={RouterLink}
+                      to="/profile"
+                      onClick={handleUserMenuClose}
+                    >
+                      Profile
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleUserMenuClose();
+                        handleLogout();
+                      }}
+                      sx={{
+                        color: 'error.main',
+                        '&:hover': {
+                          bgcolor: 'error.dark',
+                          color: 'white',
+                        },
+                      }}
+                    >
+                      Logout
+                    </MenuItem>
+                  </StyledMenu>
+                </>
+              ) : (
+                <AuthButtons>
+                  <Link component={RouterLink} to="/login" sx={{ textDecoration: 'none' }}>
+                    <LoginButton disableRipple>
+                      Login
+                    </LoginButton>
+                  </Link>
+                  <Link component={RouterLink} to="/signup" sx={{ textDecoration: 'none' }}>
+                    <SignupButton disableRipple>
+                      Sign Up
+                    </SignupButton>
+                  </Link>
+                </AuthButtons>
+              )}
+            </Box>
+          </>
         )}
-      </Toolbar>
+      </StyledToolbar>
+
+      <FriendSearch 
+        open={friendSearchOpen} 
+        onClose={() => setFriendSearchOpen(false)} 
+      />
+      <FriendsList 
+        open={friendsListOpen} 
+        onClose={() => setFriendsListOpen(false)} 
+      />
     </StyledAppBar>
   );
 };

@@ -43,4 +43,22 @@ export const getDanceCoachResponse = async (userMessage: string): Promise<string
     console.error('Error in Gemini API call:', error);
     throw new Error('Failed to get response from AI dance coach');
   }
+};
+
+export const getDanceTips = async (danceTitle: string, score: number): Promise<string> => {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+    const prompt = `Given a dance titled "${danceTitle}" with a performance score of ${score}%, provide a single encouraging tip to help improve the dance. The tip should be specific to the dance style and score, and should be encouraging and constructive. Keep it to 1-2 sentences maximum. Format: "Having trouble? Try [specific tip]"`;
+
+    // @ts-ignore - The method exists but TypeScript doesn't recognize it
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    return text.trim();
+  } catch (error) {
+    console.error('Error getting dance tips:', error);
+    return "Having trouble? Try breaking down the moves into smaller parts and practice them slowly.";
+  }
 }; 

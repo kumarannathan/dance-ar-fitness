@@ -25,6 +25,12 @@ import './App.css';
 import DanceEditor from './pages/dances/DanceEditor';
 import DancePlayer from './pages/dances/DancePlayer';
 import { NAVBAR_HEIGHT } from './components/Navbar';
+import FYP from './pages/FYP';
+import Mission from './pages/Mission';
+import Chat from './pages/Chat';
+import { AuthProvider } from './contexts/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
+import { Box } from '@mui/material';
 
 const theme = createTheme({
   palette: {
@@ -103,48 +109,45 @@ const globalStyles = {
   }
 };
 
-const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useUser();
-  
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-  
-  return user ? <>{children}</> : <Navigate to="/login" />;
-};
-
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <GlobalStyles styles={globalStyles} />
-      <UserProvider>
-        <Router>
-          <div className="App">
-            <Navbar />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path='/pricing' element={<PricingOverview />} />
-              <Route path="/workout" element={<PrivateRoute><Workout /></PrivateRoute>} />
-              <Route path="/create" element={<PrivateRoute><CreateDance /></PrivateRoute>} />
-              <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/beta" element={<PrivateRoute><BetaDanceBattle /></PrivateRoute>} />
-              <Route path="/dance/upload" element={<PrivateRoute><DanceEditor /></PrivateRoute>} />
-              <Route path="/dance/play/:danceId" element={<PrivateRoute><DancePlayer /></PrivateRoute>} />
-              <Route path="/debug/pose-tracking" element={<PoseTracking />} />
-              <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
-              <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />
-              <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
-              <Route path="/debug/grade-debugger" element={<GradeDebugger />} />
-              <Route path="/debug/dance-battle" element={<DanceBattle />} />
-            </Routes>
-          </div>
-        </Router>
-      </UserProvider>
+      <AuthProvider>
+        <UserProvider>
+          <Router>
+            <div className="App">
+              <Navbar />
+              <Box sx={{ pt: NAVBAR_HEIGHT }}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/features" element={<Features />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path='/pricing' element={<PricingOverview />} />
+                  <Route path="/fyp" element={<FYP />} />
+                  <Route path="/workout" element={<PrivateRoute><Workout /></PrivateRoute>} />
+                  <Route path="/create" element={<PrivateRoute><CreateDance /></PrivateRoute>} />
+                  <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/mission" element={<Mission />} />
+                  <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
+                  <Route path="/beta" element={<PrivateRoute><BetaDanceBattle /></PrivateRoute>} />
+                  <Route path="/dance/upload" element={<PrivateRoute><DanceEditor /></PrivateRoute>} />
+                  <Route path="/dance/play/:danceId" element={<PrivateRoute><DancePlayer /></PrivateRoute>} />
+                  <Route path="/debug/pose-tracking" element={<PoseTracking />} />
+                  <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
+                  <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />
+                  <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
+                  <Route path="/debug/grade-debugger" element={<GradeDebugger />} />
+                  <Route path="/debug/dance-battle" element={<DanceBattle />} />
+                </Routes>
+              </Box>
+            </div>
+          </Router>
+        </UserProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

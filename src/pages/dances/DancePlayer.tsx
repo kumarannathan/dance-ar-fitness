@@ -3,7 +3,7 @@ import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-
 import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { gradePose, ScoringPoseData } from '../../utils/landmark';
 import { UploadFile } from '@mui/icons-material';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import type { FirestoreDanceTrackObject } from '../../types/firestoreDataTypes';
@@ -56,7 +56,9 @@ const getScoreData = (ratio: number) => {
 const DancePlayer = () => {
 
   const { danceId } = useParams();
+  const [searchParams] = useSearchParams();
   const debugMode = danceId === 'debug';
+  const debugVideoSrc = searchParams.get('video');
 
   const [landmarker, setLandmarker] = useState<PoseLandmarker|null>(null);
   const [cameraLandmarker, setCameraLandmarker] = useState<PoseLandmarker|null>(null);
@@ -208,6 +210,17 @@ const DancePlayer = () => {
     };
     */
   }, [debugMode, fetchFirebaseData, loadFirebaseData, loadError]);
+
+  // Add a new effect to handle debug video source
+  useEffect(() => {
+    if (debugMode && debugVideoSrc && videoRef.current) {
+      videoRef.current.src = debugVideoSrc;
+      setHasLoadedVideo(true);
+      if (scoringData.length !== 0) {
+        loadPoseTracking();
+      }
+    }
+  }, [debugMode, debugVideoSrc, scoringData.length]);
 
   const loadPoseTracking = async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({

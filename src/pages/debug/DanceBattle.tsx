@@ -10,6 +10,7 @@ import {
   Collapse,
   IconButton,
   CircularProgress,
+  TextField,
 } from '@mui/material';
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { UploadFile, Help, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
@@ -18,7 +19,8 @@ import ReactConfetti from 'react-confetti';
 import styled from '@emotion/styled';
 import { extractPoseFrames, comparePoseSequences, PoseFrame } from '../../utils/poseComparison';
 import { NAVBAR_HEIGHT } from '../../components/Navbar';
-import DanceAIChat from '../../components/DanceAIChat';
+import DanceTips from '../../components/DanceTips';
+import { getDanceTips } from '../../services/geminiService';
 
 const GameContainer = styled(Container)`
   background-color: #000000;
@@ -34,7 +36,7 @@ const GameContainer = styled(Container)`
 const VideoContainer = styled(Paper)`
   background-color: #000000;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
   height: 100%;
@@ -43,32 +45,33 @@ const VideoContainer = styled(Paper)`
 `;
 
 const StyledButton = styled(Button)`
-  background: #000000;
-  border: 1px solid #FFFFFF;
-  border-radius: 2px;
-  padding: 16px 32px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 12px 24px;
   font-family: 'Space Mono', monospace;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 400;
   text-transform: uppercase;
-  color: white;
+  color: rgba(255, 255, 255, 0.8);
   letter-spacing: 1px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    background: #FFFFFF;
-    color: #000000;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #FFFFFF;
     transform: none;
   }
 
   &:disabled {
-    background: #000000;
+    background: transparent;
     border-color: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.3);
   }
 
   .MuiSvgIcon-root {
-    font-size: 1.2rem;
+    font-size: 1rem;
     margin-right: 8px;
   }
 ` as typeof Button;
@@ -141,6 +144,44 @@ const ContentContainer = styled(Box, {
   width: ${props => props.isChatExpanded ? 'calc(100% - 320px)' : '100%'};
 `;
 
+const ProcessingOverlay = styled(Box)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  z-index: 10;
+`;
+
+const ProcessingText = styled(motion.div)`
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  font-family: 'Space Mono', monospace;
+  color: #00ff00;
+  font-size: 0.875rem;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px 16px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  z-index: 1000;
+`;
+
+const HiddenVideo = styled('video')`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  &::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
+`;
+
 const getGradeAndEmojis = (score: number): { grade: string; emojis: string[]; message?: string } => {
   if (score >= 90) return { grade: 'S', emojis: ['🌟', '👑', '💫', '✨'] };
   if (score >= 80) return { grade: 'A', emojis: ['🎯', '🎪', '🎭', '🎨'] };
@@ -162,7 +203,7 @@ const getGradeAndEmojis = (score: number): { grade: string; emojis: string[]; me
   };
 };
 
-const DanceBattle = () => {
+const DanceBattle: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [benchmarkVideo, setBenchmarkVideo] = useState<File | null>(null);
   const [userVideo, setUserVideo] = useState<File | null>(null);
@@ -175,7 +216,13 @@ const DanceBattle = () => {
   const [currentGrade, setCurrentGrade] = useState<string>('');
   const [motivationalMessage, setMotivationalMessage] = useState<string>('');
   const [showHelp, setShowHelp] = useState(false);
-  const [isChatExpanded, setIsChatExpanded] = useState(true);
+  const [currentTip, setCurrentTip] = useState('');
+  const [isLoadingTip, setIsLoadingTip] = useState(false);
+  const [dots, setDots] = useState('');
+  const [score, setScore] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [processingStep, setProcessingStep] = useState<string>('');
+  const [danceTitle, setDanceTitle] = useState('');
 
   const benchmarkVideoRef = useRef<HTMLVideoElement>(null);
   const userVideoRef = useRef<HTMLVideoElement>(null);
@@ -242,6 +289,20 @@ const DanceBattle = () => {
     };
   }, [/* other dependencies */]);
 
+  // Add effect for animating dots
+  useEffect(() => {
+    if (!isComparing) return;
+
+    const interval = setInterval(() => {
+      setDots(prev => {
+        if (prev === '...') return '';
+        return prev + '.';
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [isComparing]);
+
   const handleBenchmarkVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
@@ -280,7 +341,11 @@ const DanceBattle = () => {
     }
   };
 
-  const updateScoreAndEffects = (score: number) => {
+  const handleDismissTip = () => {
+    setCurrentTip('');
+  };
+
+  const updateScoreAndEffects = async (score: number) => {
     setCurrentScore(score);
     const { grade, emojis, message } = getGradeAndEmojis(score);
     setCurrentGrade(grade);
@@ -289,16 +354,30 @@ const DanceBattle = () => {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
     }
+
+    // Get dance tips if we have a title
+    if (danceTitle) {
+      setIsLoadingTip(true);
+      try {
+        const tip = await getDanceTips(danceTitle, score);
+        setCurrentTip(tip);
+      } catch (error) {
+        console.error('Error getting dance tips:', error);
+      } finally {
+        setIsLoadingTip(false);
+      }
+    }
   };
 
   const startComparison = async () => {
-    if (!benchmarkVideo || !userVideo || !benchmarkVideoRef.current || !userVideoRef.current) return;
+    if (!benchmarkVideo || !userVideo || !benchmarkVideoRef.current || !userVideoRef.current || !danceTitle) return;
     
     setIsComparing(true);
     setProgress(0);
     setCurrentScore(0);
     setCurrentGrade('');
     setMotivationalMessage('');
+    setCurrentTip('');
 
     try {
       // Clear previous drawings
@@ -341,7 +420,7 @@ const DanceBattle = () => {
       console.log('Similarity score:', similarity);
 
       // Update the score with effects
-      updateScoreAndEffects(similarity);
+      await updateScoreAndEffects(similarity);
 
       // Visualize the poses
       if (benchmarkDrawingUtils && benchmarkFrames.length > 0) {
@@ -376,312 +455,223 @@ const DanceBattle = () => {
     }
   };
 
-  const handleChatToggle = (expanded: boolean) => {
-    setIsChatExpanded(expanded);
-  };
-
   return (
-    <>
-      <DanceAIChat onToggle={handleChatToggle} />
-      <ContentContainer isChatExpanded={isChatExpanded}>
-        <GameContainer maxWidth="lg">
-          <AnimatePresence>
-            {showConfetti && <ReactConfetti colors={['#FFFFFF']} />}
-            {currentGrade && (
-              <GradeDisplay
-                grade={currentGrade}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-              >
-                {currentGrade}
-              </GradeDisplay>
-            )}
-            {motivationalMessage && (
-              <MotivationalText
-                initial={{ x: -100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -100, opacity: 0 }}
-              >
-                {motivationalMessage}
-              </MotivationalText>
-            )}
-          </AnimatePresence>
-
-          <Typography 
-            variant="h1" 
-            gutterBottom 
-            sx={{ 
-              color: '#FFFFFF', 
-              textAlign: 'center', 
-              mb: 6,
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              fontSize: '4rem',
-              fontFamily: 'Inter, sans-serif',
-              lineHeight: 1.2
-            }}
+    <GameContainer maxWidth="lg">
+      <AnimatePresence>
+        {showConfetti && <ReactConfetti colors={['#FFFFFF']} />}
+        {currentGrade && (
+          <GradeDisplay
+            grade={currentGrade}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
           >
-            Dance Battle
-          </Typography>
+            {currentGrade}
+          </GradeDisplay>
+        )}
+        {motivationalMessage && (
+          <MotivationalText
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+          >
+            {motivationalMessage}
+          </MotivationalText>
+        )}
+        {isComparing && (
+          <ProcessingText
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+          >
+            $ processing{dots}
+          </ProcessingText>
+        )}
+      </AnimatePresence>
 
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <HelpButton
-              startIcon={<Help />}
-              endIcon={showHelp ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-              onClick={() => setShowHelp(!showHelp)}
-            >
-              Need help?
-            </HelpButton>
-            
-            <Collapse in={showHelp}>
-              <Box sx={{ 
-                mt: 3, 
-                p: 4, 
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                maxWidth: '960px',
-                mx: 'auto'
-              }}>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    color: '#FFFFFF',
-                    mb: 4,
-                    fontSize: '1.125rem',
-                    letterSpacing: '0.5px',
-                    lineHeight: 1.6,
-                    fontFamily: 'Inter, sans-serif',
-                    fontWeight: 300
-                  }}
-                >
-                  Challenge yourself by comparing your dance moves with a benchmark video
-                </Typography>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  gap: 8, 
-                  flexWrap: 'wrap'
-                }}>
-                  <Box>
-                    <Typography variant="h6" sx={{ 
-                      color: '#FFFFFF', 
-                      mb: 1, 
-                      fontWeight: 600,
-                      letterSpacing: '0.5px',
-                      fontFamily: 'Space Mono, monospace',
-                      textTransform: 'uppercase',
-                      fontSize: '0.875rem'
-                    }}>
-                      1. Upload Videos
-                    </Typography>
-                    <Typography variant="body2" sx={{ 
-                      color: '#FFFFFF', 
-                      opacity: 0.7,
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 300
-                    }}>
-                      Add a benchmark video and your dance attempt
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="h6" sx={{ 
-                      color: '#FFFFFF', 
-                      mb: 1, 
-                      fontWeight: 600,
-                      letterSpacing: '0.5px',
-                      fontFamily: 'Space Mono, monospace',
-                      textTransform: 'uppercase',
-                      fontSize: '0.875rem'
-                    }}>
-                      2. Start Battle
-                    </Typography>
-                    <Typography variant="body2" sx={{ 
-                      color: '#FFFFFF', 
-                      opacity: 0.7,
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 300
-                    }}>
-                      Click 'Start Battle' to compare the moves
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="h6" sx={{ 
-                      color: '#FFFFFF', 
-                      mb: 1, 
-                      fontWeight: 600,
-                      letterSpacing: '0.5px',
-                      fontFamily: 'Space Mono, monospace',
-                      textTransform: 'uppercase',
-                      fontSize: '0.875rem'
-                    }}>
-                      3. Get Scored
-                    </Typography>
-                    <Typography variant="body2" sx={{ 
-                      color: '#FFFFFF', 
-                      opacity: 0.7,
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 300
-                    }}>
-                      Receive your grade and performance feedback
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-            </Collapse>
-          </Box>
-          
-          <Grid container spacing={4} sx={{ mb: 6, flex: 1, overflow: 'hidden', maxWidth: '1200px', mx: 'auto' }}>
-            <Grid item xs={12} md={6} sx={{ height: '100%' }}>
-              <VideoContainer elevation={0}>
-                <Box sx={{ p: 4 }}>
-                  <Typography 
-                    variant="h6" 
-                    gutterBottom 
-                    sx={{ 
-                      color: '#FFFFFF',
-                      fontWeight: 500,
-                      mb: 3,
-                      letterSpacing: '1px',
-                      fontFamily: 'Space Mono, monospace',
-                      textTransform: 'uppercase',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    Benchmark Video
-                  </Typography>
-                  <StyledButton
-                    component="label"
-                    variant="contained"
-                    startIcon={<UploadFile />}
-                    fullWidth
-                  >
-                    Upload Benchmark
-                    <input
-                      type="file"
-                      accept="video/*"
-                      hidden
-                      onChange={handleBenchmarkVideoUpload}
-                    />
-                  </StyledButton>
-                </Box>
-                <Box sx={{ position: 'relative', width: '100%', flex: 1, overflow: 'hidden' }}>
-                  <video
-                    ref={benchmarkVideoRef}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    controls
-                    playsInline
-                  />
-                  <canvas
-                    ref={benchmarkCanvasRef}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                </Box>
-              </VideoContainer>
-            </Grid>
+      <Typography 
+        variant="h1" 
+        gutterBottom 
+        sx={{ 
+          color: '#FFFFFF', 
+          textAlign: 'center', 
+          mb: 4,
+          fontWeight: 600,
+          letterSpacing: '-0.02em',
+          fontSize: '2.5rem',
+          fontFamily: 'Inter, sans-serif',
+          lineHeight: 1.2
+        }}
+      >
+        Dance Battle
+      </Typography>
 
-            <Grid item xs={12} md={6} sx={{ height: '100%' }}>
-              <VideoContainer elevation={0}>
-                <Box sx={{ p: 4 }}>
-                  <Typography 
-                    variant="h6" 
-                    gutterBottom 
-                    sx={{ 
-                      color: '#FFFFFF',
-                      fontWeight: 500,
-                      mb: 3,
-                      letterSpacing: '1px',
-                      fontFamily: 'Space Mono, monospace',
-                      textTransform: 'uppercase',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    Your Video
-                  </Typography>
-                  <StyledButton
-                    component="label"
-                    variant="contained"
-                    startIcon={<UploadFile />}
-                    fullWidth
-                  >
-                    Upload Your Dance
-                    <input
-                      type="file"
-                      accept="video/*"
-                      hidden
-                      onChange={handleUserVideoUpload}
-                    />
-                  </StyledButton>
-                </Box>
-                <Box sx={{ position: 'relative', width: '100%', flex: 1, overflow: 'hidden' }}>
-                  <video
-                    ref={userVideoRef}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    controls
-                    playsInline
-                  />
-                  <canvas
-                    ref={userCanvasRef}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                </Box>
-              </VideoContainer>
-            </Grid>
-          </Grid>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <HelpButton
+          startIcon={<Help />}
+          endIcon={showHelp ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          onClick={() => setShowHelp(!showHelp)}
+        >
+          Need help?
+        </HelpButton>
+      </Box>
 
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <StyledButton
-              variant="contained"
-              onClick={startComparison}
-              disabled={!benchmarkVideo || !userVideo || loading || isComparing}
-              sx={{ 
-                minWidth: 240
-              }}
-            >
-              Start Battle
-            </StyledButton>
-            
-            {(isComparing || progress > 0) && (
-              <Box sx={{ width: '100%', maxWidth: '960px', mx: 'auto', mt: 4 }}>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={progress}
-                  sx={{
-                    height: 1,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    '& .MuiLinearProgress-bar': {
-                      background: '#FFFFFF',
-                    }
-                  }}
-                />
-              </Box>
-            )}
-            
-            {progress === 100 && (
-              <ScoreDisplay
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+      <Grid container spacing={3} sx={{ mb: 4, maxWidth: '1000px', mx: 'auto' }}>
+        <Grid item xs={12} md={6}>
+          <VideoContainer elevation={0}>
+            <Box sx={{ p: 3 }}>
+              <Typography 
+                variant="h6" 
+                gutterBottom 
+                sx={{ 
+                  color: '#FFFFFF',
+                  fontWeight: 500,
+                  mb: 2,
+                  letterSpacing: '0.5px',
+                  fontFamily: 'Space Mono, monospace',
+                  textTransform: 'uppercase',
+                  fontSize: '0.75rem'
+                }}
               >
-                {currentScore}%
-              </ScoreDisplay>
-            )}
-          </Box>
-        </GameContainer>
-      </ContentContainer>
-    </>
+                Benchmark Video
+              </Typography>
+              <StyledButton
+                component="label"
+                variant="contained"
+                startIcon={<UploadFile />}
+                fullWidth
+              >
+                Upload Benchmark
+                <input
+                  type="file"
+                  accept="video/*"
+                  hidden
+                  onChange={handleBenchmarkVideoUpload}
+                />
+              </StyledButton>
+            </Box>
+            <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+              <HiddenVideo
+                ref={benchmarkVideoRef}
+                playsInline
+                controlsList="nodownload nofullscreen noremoteplayback"
+              />
+              <canvas
+                ref={benchmarkCanvasRef}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  pointerEvents: 'none',
+                }}
+              />
+            </Box>
+          </VideoContainer>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <VideoContainer elevation={0}>
+            <Box sx={{ p: 3 }}>
+              <Typography 
+                variant="h6" 
+                gutterBottom 
+                sx={{ 
+                  color: '#FFFFFF',
+                  fontWeight: 500,
+                  mb: 2,
+                  letterSpacing: '0.5px',
+                  fontFamily: 'Space Mono, monospace',
+                  textTransform: 'uppercase',
+                  fontSize: '0.75rem'
+                }}
+              >
+                Your Video
+              </Typography>
+              <StyledButton
+                component="label"
+                variant="contained"
+                startIcon={<UploadFile />}
+                fullWidth
+              >
+                Upload Your Dance
+                <input
+                  type="file"
+                  accept="video/*"
+                  hidden
+                  onChange={handleUserVideoUpload}
+                />
+              </StyledButton>
+            </Box>
+            <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+              <HiddenVideo
+                ref={userVideoRef}
+                playsInline
+                controlsList="nodownload nofullscreen noremoteplayback"
+              />
+              <canvas
+                ref={userCanvasRef}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  pointerEvents: 'none',
+                }}
+              />
+            </Box>
+          </VideoContainer>
+        </Grid>
+      </Grid>
+
+      <Box sx={{ textAlign: 'center', maxWidth: '400px', mx: 'auto', mb: 4 }}>
+        <TextField
+          label="Dance Title"
+          variant="outlined"
+          value={danceTitle}
+          onChange={(e) => setDanceTitle(e.target.value)}
+          sx={{
+            mb: 3,
+            width: '100%',
+            '& .MuiOutlinedInput-root': {
+              color: '#FFFFFF',
+              fontSize: '0.875rem',
+              '& fieldset': {
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '4px',
+              },
+              '&:hover fieldset': {
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#FFFFFF',
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '0.875rem',
+              '&.Mui-focused': {
+                color: '#FFFFFF',
+              },
+            },
+          }}
+        />
+        <StyledButton
+          variant="contained"
+          onClick={startComparison}
+          disabled={!benchmarkVideo || !userVideo || !danceTitle || loading || isComparing}
+          sx={{ 
+            minWidth: 200
+          }}
+        >
+          Start Battle
+        </StyledButton>
+      </Box>
+
+      <DanceTips tip={currentTip} onDismiss={handleDismissTip} />
+    </GameContainer>
   );
 };
 
