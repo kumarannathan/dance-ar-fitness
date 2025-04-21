@@ -39,11 +39,3 @@ We've implemented a comprehensive Dance Battle system that allows users to chall
 
 The Dance Battle feature encourages social interaction and friendly competition while maintaining user privacy. Users can track their progress over time with detailed statistics showing their victories, defeats, and average scores.
 
-## Next Steps
-
-For our final milestone, we plan on working towards the following goals:
-1. Refine the Dance Battle experience with additional features
-2. Enhance the social aspects of the platform
-3. Improve performance and user experience
-4. Add more content and tutorials for new users
-5. Prepare for the official launch of DanceAR Fitness
