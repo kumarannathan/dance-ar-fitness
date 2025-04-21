@@ -778,20 +778,100 @@ const DanceEditor = () => {
       </Container>
       <Container maxWidth="lg">
         <div hidden={!loading}>
-          <Typography variant="h4" gutterBottom>
-            Dance Uploader
-          </Typography>
-          <Typography variant='body1' gutterBottom>
-            Upload a dance for others to play here! Start by selecting a video file from your device
-          </Typography>
-          <Button
-            component="label"
-            variant="outlined"
-            startIcon={<UploadFile />}
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              py: 8,
+              px: 2,
+              textAlign: 'center',
+              background: 'linear-gradient(145deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.1) 100%)',
+              borderRadius: 4,
+              border: '2px dashed rgba(25, 118, 210, 0.2)',
+              mb: 4
+            }}
           >
-            Upload Video
-            <input type="file" accept="video/*" hidden onChange={handleVideoUpload} />
-          </Button>
+            <Typography 
+              variant="h4" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 700,
+                color: '#FFFFFF',
+                mb: 2,
+                fontFamily: 'Space Mono, monospace',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Dance Uploader
+            </Typography>
+            <Typography 
+              variant='body1' 
+              gutterBottom 
+              sx={{ 
+                maxWidth: '600px',
+                mb: 4,
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              Upload a dance for others to play here! Start by selecting a video file from your device.
+              We'll analyze your dance moves to create an interactive experience.
+            </Typography>
+            <Button
+              component="label"
+              variant="contained"
+              startIcon={<UploadFile />}
+              sx={{
+                py: 1.5,
+                px: 4,
+                borderRadius: 2,
+                boxShadow: '0 4px 14px 0 rgba(255, 255, 255, 0.1)',
+                background: 'rgb(255, 255, 255)',
+                '&:hover': {
+                  background: 'rgb(255, 255, 255)',
+                  boxShadow: '0 6px 20px 0 rgba(255, 255, 255, 0.2)',
+                }
+              }}
+            >
+              Upload Video
+              <input type="file" accept="video/*" hidden onChange={handleVideoUpload} />
+            </Button>
+            <Box sx={{ mt: 4, display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'Inter, sans-serif' }}>
+                  Supported formats: MP4, MOV, AVI
+                </Typography>
+              </Paper>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'Inter, sans-serif' }}>
+                  Max file size: 100MB
+                </Typography>
+              </Paper>
+            </Box>
+          </Box>
         </div>
       </Container>
       <Dialog
@@ -819,58 +899,100 @@ const DanceEditor = () => {
       <Dialog
         open={hasPublishingDialogOpen}
         onClose={() => { setHasPublishingDialogOpen(false) }}
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            maxWidth: '600px',
+            width: '100%'
+          }
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ 
+          pb: 1,
+          background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
+          color: 'white',
+          fontWeight: 600
+        }}>
           Add Details & Upload
         </DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth sx={{mb: 2}}>
+        <DialogContent sx={{ pt: 3 }}>
+          <FormControl fullWidth sx={{mb: 3}}>
             <TextField
               label="Dance Title"
-              variant="filled"
+              variant="outlined"
               value={uploadDetails.title}
               required
               onChange={(e) => handleUploadDetailChange(e, 'title')}
+              sx={{ 
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2
+                }
+              }}
             />
           </FormControl>
-          <FormControl fullWidth sx={{mb: 2}}>
+          <FormControl fullWidth sx={{mb: 3}}>
             <TextField
               label="Description"
-              variant="filled"
+              variant="outlined"
               value={uploadDetails.description}
               required
+              multiline
+              rows={3}
               onChange={(e) => handleUploadDetailChange(e, 'description')}
+              sx={{ 
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2
+                }
+              }}
             />
           </FormControl>
-          <FormControl fullWidth sx={{mb: 2}}>
+          <FormControl fullWidth sx={{mb: 3}}>
             <TextField
               label="Song Title"
-              variant="filled"
+              variant="outlined"
               value={uploadDetails.songTitle}
               required
               onChange={(e) => handleUploadDetailChange(e, 'songTitle')}
+              sx={{ 
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2
+                }
+              }}
             />
           </FormControl>
-
           <FormControl fullWidth>
             <TextField
               label="Song Artist"
-              variant="filled"
+              variant="outlined"
               value={uploadDetails.songAuthor}
               required
               onChange={(e) => handleUploadDetailChange(e, 'songAuthor')}
+              sx={{ 
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2
+                }
+              }}
             />
           </FormControl>
-
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button
             onClick={() => { setHasPublishingDialogOpen(false) }}
+            variant="outlined"
+            sx={{ borderRadius: 2 }}
           >
             Cancel
           </Button>
           <Button
             onClick={startUpload}
+            variant="contained"
+            sx={{ 
+              borderRadius: 2,
+              background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #1565c0, #1976d2)',
+              }
+            }}
           >
             Upload
           </Button>
@@ -880,18 +1002,44 @@ const DanceEditor = () => {
         <>
           {(!submissionComplete && !submissionFailure) ? (
             <>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, justifyContent: 'center', my: 4 }}>
-                <CircularProgress />
-                <Typography variant='h5'>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                gap: 3, 
+                justifyContent: 'center', 
+                my: 6,
+                p: 4,
+                background: 'linear-gradient(145deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.1) 100%)',
+                borderRadius: 4,
+                maxWidth: '600px',
+                mx: 'auto'
+              }}>
+                <CircularProgress size={60} thickness={4} sx={{ color: '#1976d2' }} />
+                <Typography variant='h5' sx={{ fontWeight: 600 }}>
                   Uploading your dance, please wait...
+                </Typography>
+                <Typography variant='body2' color="text.secondary" textAlign="center">
+                  This may take a few minutes depending on the size of your video.
                 </Typography>
               </Box>
             </>
           ) : ''}
           {submissionFailure ? (
             <center>
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', my: 4, width: '80vw' }}>
-                <Alert severity='error' sx={{mb: 3}}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                my: 4, 
+                width: '80vw',
+                maxWidth: '600px',
+                mx: 'auto',
+                p: 3,
+                background: 'linear-gradient(145deg, rgba(211, 47, 47, 0.05) 0%, rgba(211, 47, 47, 0.1) 100%)',
+                borderRadius: 4
+              }}>
+                <Alert severity='error' sx={{mb: 3, borderRadius: 2}}>
                   An error occurred while uploading your dance! Don't worry, your data has not been lost. To continue, you can either
                   go back to the editor to make changes or try uploading again.
                 </Alert>
@@ -899,6 +1047,7 @@ const DanceEditor = () => {
                   <Button
                     onClick={() => {setSubmitting(false)}}
                     variant='outlined'
+                    sx={{ borderRadius: 2 }}
                   >
                     Back to editor
                   </Button>
@@ -907,7 +1056,14 @@ const DanceEditor = () => {
                       setSubmissionFailure(false);
                       startUpload();
                     }}
-                    variant='outlined'
+                    variant='contained'
+                    sx={{ 
+                      borderRadius: 2,
+                      background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
+                      '&:hover': {
+                        background: 'linear-gradient(45deg, #1565c0, #1976d2)',
+                      }
+                    }}
                   >
                     Retry upload
                   </Button>
@@ -917,10 +1073,34 @@ const DanceEditor = () => {
           ) : ''}
           {submissionComplete ? (
             <center>
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', my: 4, width: '80vw' }}>
-                <Alert severity='success' sx={{mb: 3}}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                my: 4, 
+                width: '80vw',
+                maxWidth: '600px',
+                mx: 'auto',
+                p: 3,
+                background: 'linear-gradient(145deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.1) 100%)',
+                borderRadius: 4
+              }}>
+                <Alert severity='success' sx={{mb: 3, borderRadius: 2}}>
                   Your dance has been uploaded! You can now view it on your profile!
                 </Alert>
+                <Button
+                  variant="contained"
+                  sx={{ 
+                    borderRadius: 2,
+                    background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #1565c0, #1976d2)',
+                    }
+                  }}
+                  onClick={() => window.location.href = '/profile'}
+                >
+                  Go to Profile
+                </Button>
               </Box>
             </center>
           ) : ''}

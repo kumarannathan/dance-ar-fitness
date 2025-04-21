@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -67,27 +67,43 @@ const ValueProp = styled(Box)`
   }
 `;
 
-const DottedWorldMap = () => (
-  <Box
-    component="div"
-    sx={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: '100%',
-      height: '100%',
-      opacity: 0.4,
-      background: 'url(/world-map-dots.svg) no-repeat center center',
-      backgroundSize: 'contain',
-      zIndex: 0,
-      filter: 'brightness(0.7)',
-    }}
-  />
-);
+const VideoBackground = styled(Box)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.5));
+    z-index: 1;
+  }
+  
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
 
 const Home = () => {
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [danceTitle, setDanceTitle] = useState('');
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.75; // Slow down the video slightly
+    }
+  }, []);
 
   return (
     <Box 
@@ -97,15 +113,26 @@ const Home = () => {
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
+        minHeight: '100vh',
       }}
     >
-      <DottedWorldMap />
+      <VideoBackground>
+        <video 
+          ref={videoRef}
+          autoPlay 
+          muted 
+          loop 
+          playsInline
+          src="/background.mov"
+        />
+      </VideoBackground>
       
       <Container 
         maxWidth="lg"
         sx={{
           position: 'relative',
-          zIndex: 1
+          zIndex: 2,
+          py: 8
         }}
       >
         <motion.div
@@ -127,7 +154,7 @@ const Home = () => {
             }}
           >
             Dance for Everyone,<br />
-            Powered by AI
+            Anywhere
           </Typography>
 
           <Typography
@@ -135,14 +162,13 @@ const Home = () => {
             sx={{
               textAlign: 'center',
               mb: 6,
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: 'rgba(255, 255, 255, 0.9)',
               maxWidth: '800px',
               mx: 'auto',
               lineHeight: 1.6,
             }}
           >
-            Breaking down barriers to dance and fitness through accessible technology.
-            Learn, create, and connect with our AI-powered platform.
+            Empowering movement through simple, accessible technology. Whether you're a first-timer or a lifelong dancer, DanceAR helps you move, connect, and grow — no studio required.
           </Typography>
 
           <Box
@@ -153,6 +179,13 @@ const Home = () => {
               mb: 12,
             }}
           >
+    
+            <SecondaryButton
+              onClick={() => navigate('/blog')}
+              startIcon={<motion.span>📝</motion.span>}
+            >
+              Dev Blog
+            </SecondaryButton>
             <PrimaryButton
               onClick={() => navigate('/features')}
               startIcon={<motion.span>🎵</motion.span>}
@@ -160,10 +193,10 @@ const Home = () => {
               Start Dancing
             </PrimaryButton>
             <SecondaryButton
-              onClick={() => navigate('/blog')}
-              startIcon={<motion.span>📝</motion.span>}
+              onClick={() => navigate('/mission')}
+              startIcon={<motion.span>🎯</motion.span>}
             >
-              Dev Blog
+              Our Mission
             </SecondaryButton>
           </Box>
 
@@ -177,10 +210,10 @@ const Home = () => {
                 <ValueProp>
                   <AccessibilityNewIcon />
                   <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 600 }}>
-                    Accessible to All
+                    Built for Access
                   </Typography>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    No special equipment needed. Just your device's camera and our web-based platform.
+                    All you need is a device with a camera. No app downloads, no expensive gear. Just dance.
                   </Typography>
                 </ValueProp>
               </motion.div>
@@ -194,10 +227,10 @@ const Home = () => {
                 <ValueProp>
                   <FitnessCenterIcon />
                   <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 600 }}>
-                    Real-time Feedback
+                    Movement, Not Perfection
                   </Typography>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    Advanced AI technology provides instant, personalized guidance on your movements.
+                    Real-time guidance helps you improve at your own pace — not with pressure, but with support.
                   </Typography>
                 </ValueProp>
               </motion.div>
@@ -211,10 +244,10 @@ const Home = () => {
                 <ValueProp>
                   <GroupsIcon />
                   <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 600 }}>
-                    Community-Driven
+                    Move Together
                   </Typography>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    Share, learn, and grow with a supportive community of dancers at all skill levels.
+                    Join a welcoming, diverse community of dancers around the world. Learn routines, share your moves, and lift each other up.
                   </Typography>
                 </ValueProp>
               </motion.div>

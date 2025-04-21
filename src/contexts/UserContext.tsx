@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { User } from 'firebase/auth';
+import { auth, db } from '../firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface UserContextType {
   user: User | null;
@@ -19,17 +20,42 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    return auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        console.log('Auth state changed - user signed in:', user.email);
+        // Check if user document exists in Firestore
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+
+        console.log('Checking user document:', {
+          exists: userDoc.exists(),
+          userId: user.uid,
+          userEmail: user.email
+        });
+
+        // If user document doesn't exist, create it with initial data
+        if (!userDoc.exists()) {
+          console.log('Creating new user document');
+          await setDoc(userRef, {
+            email: user.email?.toLowerCase(),
+            friends: [],
+            createdAt: new Date(),
+          });
+          console.log('User document created successfully');
+        }
+      } else {
+        console.log('Auth state changed - user signed out');
+      }
       setUser(user);
       setLoading(false);
     });
-
-    return unsubscribe;
   }, []);
 
   return (
     <UserContext.Provider value={{ user, loading }}>
-      {!loading && children}
+      {children}
     </UserContext.Provider>
   );
-}; 
+};
+
+export default UserContext; 
