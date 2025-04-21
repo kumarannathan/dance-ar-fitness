@@ -1,0 +1,20 @@
+[
+  {
+    "origin": ["http://localhost:3000"],
+    "method": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "responseHeader": ["Content-Type", "x-goog-resumable"],
+    "maxAgeSeconds": 3600
+  },
+  {
+    "origin": ["https://dance-ar-fitness.web.app"],
+    "method": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "responseHeader": ["Content-Type", "x-goog-resumable"],
+    "maxAgeSeconds": 3600
+  },
+  {
+    "origin": ["*"],
+    "method": ["GET"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+] 

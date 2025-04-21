@@ -18,7 +18,8 @@ import LiveVideoScoreDebugger from './pages/debug/LiveVideoScoreDebugger';
 import GradeDebugger from './pages/debug/GradeDebugger';
 import ImagePoseTracking from './pages/debug/ImagePoseTracking';
 import BetaDanceBattle from './pages/BetaDanceBattle';
-import DanceBattle from './pages/debug/DanceBattle';
+import ProgressCheck from './pages/ProgressCheck';
+import DanceBattle from './pages/DanceBattle';
 import { UserProvider, useUser } from './contexts/UserContext';
 import PricingOverview from './pages/PricingPanel';
 import './App.css';
@@ -136,12 +137,13 @@ function App() {
                   <Route path="/beta" element={<PrivateRoute><BetaDanceBattle /></PrivateRoute>} />
                   <Route path="/dance/upload" element={<PrivateRoute><DanceEditor /></PrivateRoute>} />
                   <Route path="/dance/play/:danceId" element={<PrivateRoute><DancePlayer /></PrivateRoute>} />
+                  <Route path="/dance-battle" element={<PrivateRoute><DanceBattle /></PrivateRoute>} />
                   <Route path="/debug/pose-tracking" element={<PoseTracking />} />
                   <Route path="/debug/video-pose-tracking" element={<VideoPoseTracking />} />
                   <Route path="/debug/image-pose-tracking" element={<ImagePoseTracking />} />
                   <Route path="/debug/live-video-scoring-test" element={<LiveVideoScoreDebugger />} />
                   <Route path="/debug/grade-debugger" element={<GradeDebugger />} />
-                  <Route path="/debug/dance-battle" element={<DanceBattle />} />
+                  <Route path="/debug/dance-battle" element={<ProgressCheck />} />
                 </Routes>
               </Box>
             </div>

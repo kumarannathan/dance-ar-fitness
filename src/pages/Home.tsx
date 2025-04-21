@@ -114,19 +114,9 @@ const Home = () => {
         position: 'relative',
         overflow: 'hidden',
         minHeight: '100vh',
+        background: '#000000',
       }}
     >
-      <VideoBackground>
-        <video 
-          ref={videoRef}
-          autoPlay 
-          muted 
-          loop 
-          playsInline
-          src="/background.mov"
-        />
-      </VideoBackground>
-      
       <Container 
         maxWidth="lg"
         sx={{

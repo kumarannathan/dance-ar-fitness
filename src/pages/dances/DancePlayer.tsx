@@ -115,7 +115,7 @@ const DancePlayer = () => {
       }
       // we also process the video in mirrored form, which is why this cant just be a simple CSS hack
       cameraLandmarker.detectForVideo(camCanvasRef.current, time, (result) => {
-        if (result.landmarks.length === 0) return;
+        if (!result.landmarks || result.landmarks.length === 0) return;
         if (!videoRef.current || !camVideoRef.current) return;
         if (camVideoTime >= time + 2) return;
         const landmark = result.landmarks[0];
@@ -133,21 +133,25 @@ const DancePlayer = () => {
           }
         }
         let feedbackEligibilityCount = 0;
-        for (let i = 0; i < scoringData.length; ++i) {
-          const scoreTimestamp = scoringData[i];
-          const danceStartTime = scoreTimestamp.t + DANCE_SCORING_START_DELAY;
-          const danceEndTime = scoreTimestamp.t + DANCE_SCORING_START_DELAY + DANCE_SCORING_PERIOD;
-          if (danceEndTime < videoRef.current.currentTime && danceEndTime + DANCE_SCORING_FEEDBACK_PERIOD > videoRef.current.currentTime) {
-            setCurrentScore(scoringStatisticsRef.current[i] / scoreTimestamp.p.map(x => x.i).reduce((a, b) => a + b));
-            ++feedbackEligibilityCount;
-            continue;
-          }
-          if (danceStartTime > videoRef.current.currentTime || danceEndTime < videoRef.current.currentTime) continue;
-          
-          // find their current score
-          const userScore = gradePose(landmark, scoreTimestamp.p);
-          if (userScore > scoringStatisticsRef.current[i]) {
-            scoringStatisticsRef.current[i] = userScore;
+        if (scoringData && scoringData.length > 0) {
+          for (let i = 0; i < scoringData.length; ++i) {
+            const scoreTimestamp = scoringData[i];
+            if (!scoreTimestamp || !scoreTimestamp.p) continue;
+            
+            const danceStartTime = scoreTimestamp.t + DANCE_SCORING_START_DELAY;
+            const danceEndTime = scoreTimestamp.t + DANCE_SCORING_START_DELAY + DANCE_SCORING_PERIOD;
+            if (danceEndTime < videoRef.current.currentTime && danceEndTime + DANCE_SCORING_FEEDBACK_PERIOD > videoRef.current.currentTime) {
+              setCurrentScore(scoringStatisticsRef.current[i] / scoreTimestamp.p.map(x => x.i).reduce((a, b) => a + b));
+              ++feedbackEligibilityCount;
+              continue;
+            }
+            if (danceStartTime > videoRef.current.currentTime || danceEndTime < videoRef.current.currentTime) continue;
+            
+            // find their current score
+            const userScore = gradePose(landmark, scoreTimestamp.p);
+            if (userScore > scoringStatisticsRef.current[i]) {
+              scoringStatisticsRef.current[i] = userScore;
+            }
           }
         }
         if (feedbackEligibilityCount === 0) {
@@ -288,6 +292,9 @@ const DancePlayer = () => {
     
     try {
       scoringData = JSON.parse(scoringDataText);
+      if (!Array.isArray(scoringData)) {
+        throw new Error('Scoring data must be an array');
+      }
     } catch (ex) {
       alert(`encountered error while parsing dance JSON: ${ex}`);
       return;
@@ -295,8 +302,9 @@ const DancePlayer = () => {
 
     setScoringData(scoringData);
     scoringStatisticsRef.current = Array(scoringData.length).fill(0);
-    if (hasLoadedVideo)
+    if (hasLoadedVideo) {
       loadPoseTracking();
+    }
   }
 
   return (
