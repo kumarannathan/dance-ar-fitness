@@ -1,3 +1,10 @@
+---
+title: "Milestone 4: Dance Battle & Social Features"
+date: "2025-04-21"
+category: "Development"
+description: "Implementing dance battles and social features for community engagement for final product"
+---
+
 [Read our playtesting report (requires UM Google login)](https://drive.google.com/file/d/1tIXja0qBHOnfKIGU3O4Y_oi3fNZrLIl7/view?usp=sharing)
 
 ## Overview
@@ -20,4 +27,23 @@ We have added more social features to the app, including adding friends, chats, 
 
 ### Dance Battle
 
-(TODO: Dance Battle stuff)
+We've implemented a comprehensive Dance Battle system that allows users to challenge friends and compete in dance-offs! The system includes:
+
+- **Battle Creation**: Users can create battles by uploading a benchmark video and selecting friends to challenge
+- **Battle Invites**: Users receive and can accept battle invites from friends
+- **Active Battles**: Users can participate in ongoing battles, upload their dance videos, and see real-time scores
+- **Battle History**: A dedicated section in the profile page shows battle statistics and history
+- **Privacy-Focused Design**: Only benchmark videos are uploaded to the server; user dance videos are processed locally
+- **Score Calculation**: Scores are calculated by comparing pose sequences between the benchmark and user videos
+- **Visual Feedback**: Confetti animations celebrate completed battles, and color-coded status indicators show battle outcomes
+
+The Dance Battle feature encourages social interaction and friendly competition while maintaining user privacy. Users can track their progress over time with detailed statistics showing their victories, defeats, and average scores.
+
+## Next Steps
+
+For our final milestone, we plan on working towards the following goals:
+1. Refine the Dance Battle experience with additional features
+2. Enhance the social aspects of the platform
+3. Improve performance and user experience
+4. Add more content and tutorials for new users
+5. Prepare for the official launch of DanceAR Fitness
