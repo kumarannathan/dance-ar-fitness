@@ -121,7 +121,7 @@ const Home = () => {
         maxWidth="lg"
         sx={{
           position: 'relative',
-          zIndex: 2,
+          zIndex: 1.5,
           py: 8
         }}
       >
@@ -166,7 +166,7 @@ const Home = () => {
               display: 'flex',
               gap: 2,
               justifyContent: 'center',
-              mb: 12,
+              mb: 4,
             }}
           >
     
@@ -177,7 +177,7 @@ const Home = () => {
               Dev Blog
             </SecondaryButton>
             <PrimaryButton
-              onClick={() => navigate('/features')}
+              onClick={() => navigate('/fyp')}
               startIcon={<motion.span>🎵</motion.span>}
             >
               Start Dancing
@@ -188,6 +188,16 @@ const Home = () => {
             >
               Our Mission
             </SecondaryButton>
+          </Box>
+          
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mb: 12
+            }}
+          >
+            <iframe width="1120" height="630" src="https://www.youtube.com/embed/F4TN4-9_lTI" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen style={{border: 'none'}}></iframe>
           </Box>
 
           <Grid container spacing={4}>

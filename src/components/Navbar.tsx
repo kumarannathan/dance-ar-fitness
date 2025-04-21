@@ -217,8 +217,8 @@ const Navbar = () => {
   const menuItems = [
     { text: 'Home', path: '/' },
     { text: 'For You', path: '/fyp' },
-    { text: 'Upload Dance', path: '/dance/upload' },
-    { text: 'Dance Battle', path: '/dance-battle' },
+    { text: 'Create', path: '/dance/upload' },
+    // { text: 'Dance Battle', path: '/debug/dance-battle' },
     { text: 'Pricing', path: '/pricing' },
   ];
 
@@ -317,7 +317,7 @@ const Navbar = () => {
   );
 
   return (
-    <StyledAppBar position="fixed">
+    <StyledAppBar position="fixed" sx={{zIndex: 2}}>
       <StyledToolbar>
         {/* Left section - Logo */}
         <Box sx={{ width: '200px' }}>

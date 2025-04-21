@@ -805,7 +805,7 @@ const DanceEditor = () => {
                 letterSpacing: '0.5px'
               }}
             >
-              Dance Uploader
+              Create a Dance
             </Typography>
             <Typography 
               variant='body1' 
