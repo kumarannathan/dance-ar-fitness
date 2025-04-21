@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
-import { gradePose, ScoringPoseData } from '../../utils/landmark';
+import { FramePresenceType, getPresenceForFrame, gradePose, isHandsUp, ScoringPoseData } from '../../utils/landmark';
 import { UploadFile } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import { collection, doc, getDoc } from 'firebase/firestore';
@@ -17,6 +17,7 @@ const DANCE_SCORING_PERIOD = 0.75;
 const DANCE_SCORING_START_DELAY = 0.0;
 // This shows how many seconds we will display scoring feedback to the user.
 const DANCE_SCORING_FEEDBACK_PERIOD = 1.5;
+const DANCE_HANDS_UP_DURATION = 3.0;
 
 interface DanceScoringDataPoints {
   t: number;
@@ -76,6 +77,9 @@ const DancePlayer = () => {
     videoUrl: '--',
     scoreData: []
   });
+  const [starting, setStarting] = useState(true);
+  const [startingTimeRemaining, setStartingTimeRemaining] = useState(0);
+  const [framePresence, setFramePresence] = useState<FramePresenceType>(FramePresenceType.CompleteInFrame);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -85,6 +89,8 @@ const DancePlayer = () => {
   // This is a ref so we don't cause a re-render every time we update it in useEffect
   const scoringStatisticsRef = useRef<number[]>([]);
   const hasLoadedRef = useRef(false);
+  const handsUpStartTimeRef = useRef(0);
+  const camVideoTimeRef = useRef(0);
 
   useEffect(() => {
     if (loading) return;
@@ -92,7 +98,7 @@ const DancePlayer = () => {
     let cancel = false;
 
     // camera
-    let camVideoTime = 0;
+    let camVideoTime = camVideoTimeRef.current;
     const processCamera = () => {
       if (!cameraLandmarker || !camVideoRef.current || !camCanvasRef.current || cancel) return;
       let time = camVideoRef.current.currentTime * 1000;
@@ -130,6 +136,29 @@ const DancePlayer = () => {
             canvasCtx.restore();
           }
         }
+        if (!cancel && starting) {
+          if (handsUpStartTimeRef.current === 0) {
+            if (isHandsUp(landmark)) {
+              handsUpStartTimeRef.current = Date.now();
+              setStartingTimeRemaining(DANCE_HANDS_UP_DURATION);
+            }
+          } else if (handsUpStartTimeRef.current !== 0) {
+            if (!isHandsUp(landmark)) {
+              handsUpStartTimeRef.current = 0;
+              setStartingTimeRemaining(0);
+              return;
+            }
+            const danceStartTime = (handsUpStartTimeRef.current + (DANCE_HANDS_UP_DURATION * 1000));
+            if (danceStartTime - Date.now() < 0) {
+              setStarting(false);
+              videoRef.current.play();
+            } else {
+              setStartingTimeRemaining(Math.ceil((danceStartTime - Date.now())/1000));
+            }
+          }
+          return;
+        }
+        setFramePresence(getPresenceForFrame(landmark));
         let feedbackEligibilityCount = 0;
         for (let i = 0; i < scoringData.length; ++i) {
           const scoreTimestamp = scoringData[i];
@@ -152,6 +181,7 @@ const DancePlayer = () => {
           setCurrentScore(0);
         }
       });
+      camVideoTimeRef.current = camVideoTime;
       window.requestAnimationFrame(processCamera);
     };
     window.requestAnimationFrame(processCamera);
@@ -159,7 +189,7 @@ const DancePlayer = () => {
     return () => {
       cancel = true;
     };
-  }, [videoRef, canvasRef, scoringStatisticsRef, scoringData, landmarker, cameraLandmarker, loading]);
+  }, [videoRef, canvasRef, scoringStatisticsRef, scoringData, landmarker, cameraLandmarker, loading, starting]);
 
   const fetchFirebaseData = useCallback(async () => {
     const result = await getDoc(doc(collection(db, 'dances'), danceId));
@@ -248,7 +278,7 @@ const DancePlayer = () => {
     setCameraLandmarker(camLandmarker);
     setLoading(false);
     camVideoRef.current.play();
-    videoRef.current.play();
+    videoRef.current.load();
   };
 
   const handleVideoUpload = (event: ChangeEvent<HTMLInputElement>) => {
@@ -339,19 +369,7 @@ const DancePlayer = () => {
             <CircularProgress />
           </Box>
         ))
-      )) : (
-        <>
-          <center>
-            <div style={{
-              backgroundColor: getScoreData(currentScore).color,
-              fontSize: '50px',
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
-            }}>
-              {getScoreData(currentScore).status}
-            </div>
-          </center>
-        </>
-      )}
+      )) : ''}
       {(debugMode ? currentScore !== 0 : getScoreData(currentScore).status !== 'x') ? (
         <div style={{
           position: 'absolute',
@@ -397,43 +415,63 @@ const DancePlayer = () => {
         position: 'absolute',
         top: '20px',
         left: '20px',
-        maxWidth: '200px'
+        maxWidth: '200px',
+        zIndex: 3
       }}>
         <video ref={camVideoRef} width={"100%"} playsInline style={{opacity: 0}} />
         <canvas ref={camCanvasRef} height={camVideoRef.current?.clientHeight} width={camVideoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0}}></canvas>
         <canvas ref={camDebugCanvasRef} height={camVideoRef.current?.clientHeight} width={camVideoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, zIndex: 2}}></canvas>
       </div>
-      {/* track details container */}
-      <div
-        style={{
+      {!starting ? (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '20px',
+            left: '20px',
+            borderLeft: '5px solid',
+            display: loading ? 'none' : 'flex',
+            flexDirection: 'column',
+            paddingLeft: 20
+          }}
+        >
+          <div style={{
+            fontSize: '1.5em',
+            fontWeight: 'bolder',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+          }}>
+            {framePresence === FramePresenceType.OutOfFrame ? 'Out of frame!' : (framePresence === FramePresenceType.PartialInFrame) ? 'Partially in frame!' : 'Completely in frame!'}
+          </div>
+        </div>
+      ) : ''}
+      {(starting && !loading) ? (
+        <div style={{
           position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          borderLeft: '5px solid',
-          display: loading ? 'none' : 'flex',
-          flexDirection: 'column',
-          paddingLeft: 20
-        }}
-      >
-        <div style={{
-          fontSize: '1.5em',
-          fontWeight: 'bolder',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+          top: '0px',
+          left: '0px',
+          bottom: '0px',
+          right: '0px',
+          zIndex: 2,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center'
         }}>
-          {trackInfo.title}
+          <div style={{margin: '0 auto', textAlign: 'center'}}>
+            <div style={{
+              fontSize: '4em',
+              fontWeight: 'bolder',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+            }}>
+              {startingTimeRemaining === 0 ? 'Get your hands up!' : `Starting in ${startingTimeRemaining} second${startingTimeRemaining !== 1 ? 's' : ''}`}
+            </div>
+            <div style={{
+              fontSize: '2em',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+            }}>
+              {startingTimeRemaining === 0 ? 'To start playing, put your hands in the air for three seconds!' : `Keep your hands up to start playing!`}
+            </div>
+          </div>
         </div>
-        <div style={{
-          fontWeight: 'bold',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
-        }}>
-          {trackInfo.songTitle}
-        </div>
-        <div style={{
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
-        }}>
-          {trackInfo.songAuthor}
-        </div>
-      </div>
+      ) : ''}
     </Container>
   );
 };

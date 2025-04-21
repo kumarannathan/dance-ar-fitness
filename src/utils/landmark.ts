@@ -1,7 +1,7 @@
 // apparently mediapipe does not provide an enum for all of the points and
 // everything, so i'm going to define them in here.
 
-import { Landmark, PoseLandmarker } from '@mediapipe/tasks-vision'
+import { Landmark, NormalizedLandmark, PoseLandmarker } from '@mediapipe/tasks-vision'
 import { getAngleFromDistances, getEuclideanDistance } from './math';
 
 export enum BodyLandmarkType {
@@ -75,6 +75,12 @@ export const BODY_LANDMARK_NAMES: string[] = [
   "Left Foot Index",
   "Right Foot Index"
 ];
+
+export enum FramePresenceType {
+  OutOfFrame = 0,
+  PartialInFrame = 1,
+  CompleteInFrame = 2
+};
 
 export interface ScoringPoseData {
   // The BodyLandmarkType to be starting from
@@ -174,4 +180,50 @@ export const gradePose = (userPose: Landmark[], targets: ScoringPoseData[]) => {
   }
   // overallScore /= importanceSum;
   return overallScore;
-}
+};
+
+export const isJointInFrame = (joint: Landmark) => {
+  // TODO: fine tune this!
+  return joint.visibility > 0.15;
+};
+
+export const getPresenceForFrame: (pose: Landmark[]) => FramePresenceType = (pose) => {
+  const selectedPose = pose.slice(BodyLandmarkType.LeftShoulder, BodyLandmarkType.LeftHeel);
+  let detectedOneInFrame = false;
+  let detectedOneOutOfFrame = false;
+
+  for (const landmark of selectedPose) {
+    if (isJointInFrame(landmark)) {
+      detectedOneInFrame = true;
+    } else {
+      detectedOneOutOfFrame = true;
+    }
+  }
+
+  if (!detectedOneInFrame) {
+    return FramePresenceType.OutOfFrame;
+  }
+  
+  return detectedOneOutOfFrame ? FramePresenceType.PartialInFrame : FramePresenceType.CompleteInFrame;
+};
+
+export const isHandsUp = (pose: Landmark[]) => {
+  const requiredJoints = [
+    BodyLandmarkType.LeftWrist,
+    BodyLandmarkType.RightWrist,
+    BodyLandmarkType.LeftEye,
+    BodyLandmarkType.RightEye
+  ];
+
+  for (const requiredJoint of requiredJoints) {
+    if (!isJointInFrame(pose[requiredJoint])) {
+      console.log('joint not in frame!');
+      return false;
+    }
+  }
+
+  return (
+    (pose[BodyLandmarkType.LeftWrist].y < pose[BodyLandmarkType.LeftEye].y) &&
+    (pose[BodyLandmarkType.RightWrist].y < pose[BodyLandmarkType.RightEye].y)
+  );
+};
