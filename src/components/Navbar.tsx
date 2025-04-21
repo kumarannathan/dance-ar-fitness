@@ -217,8 +217,8 @@ const Navbar = () => {
   const menuItems = [
     { text: 'Home', path: '/' },
     { text: 'For You', path: '/fyp' },
-    { text: 'Upload Dance', path: '/dance/upload' },
-    { text: 'Dance Battle', path: '/debug/dance-battle' },
+    { text: 'Create', path: '/dance/upload' },
+    // { text: 'Dance Battle', path: '/debug/dance-battle' },
     { text: 'Pricing', path: '/pricing' },
   ];
 

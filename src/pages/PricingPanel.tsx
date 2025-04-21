@@ -88,7 +88,7 @@ const PricingOverview = () => {
       features: [
         'Access exclusive dance content for DanceAR Premium members',
         'Get one free Dance Streak revival per month',
-        'Freely request a Streak Pause for vacations',
+        'Use a Streak Pause for vacations',
         'Play workouts with custom accuracy scoring',
         'Record and rewatch with advanced feedback'
       ],
@@ -101,35 +101,34 @@ const PricingOverview = () => {
 
   const oneTimePurchases = [
     {
-      title: 'Dance Streak Revival',
-      price: '$2.50',
-      period: 'per use',
+      title: 'Revenue Sharing',
+      price: '30%',
+      period: 'commission per user onboarded',
       features: [
-        'Revives your Dance Streak from where you left off',
-        'Only works once per purchase',
-        'Can only be purchased once per week',
-        'Allows you to restart your streak at any time'
+        'Show previews of your content on DanceAR to promote your subscription',
+        'Allow users to follow along to your tracked content',
+        'Unlock the advanced editor for more precise control',
+        'Integrates with other platforms via SSO/SAML to allow existing users to onboard by only paying commission',
+        'DRM content protection to ensure users cannot reupload your content'
       ],
-      description: 'Dance Streaks are designed to help motivate you to be consistent with your workout routines. To motivate you to keep a consistent streak, the only way to recover a lost streak is to use a Dance Streak Revival.',
-      note: 'Note: If you become injured, temporarily unable to complete dances, or unable to play due to a platform outage, please contact our support team who will be happy to grant you a free Dance Streak Revival! Safety is our top priority, and we want to ensure users are never encouraged to play when they are injured!',
-      buttonText: 'Purchase',
+      description: 'Sell existing dance or workout content on DanceAR and allow members to subscribe to access your content!',
+      note: 'This feature is currently under development, but we would love to know if you\'re interested!',
+      buttonText: 'Contact us',
       buttonVariant: 'outlined' as const,
       isPopular: false
     },
     {
-      title: 'Streak Pause',
-      price: '$0.50',
-      period: 'per day (up to $5.00)',
+      title: 'DanceAR Health',
+      price: '$9.99',
+      period: 'per monthly active user',
       features: [
-        'Keep your Dance Streak while you\'re gone',
-        'Pause will only last the duration you specify',
-        'Requires support agents to approve your reason',
-        'If rejected, you will be completely refunded',
-        'Free for DanceAR Premium members!'
+        'Integrate your SSO/SAML solution to allow customers to login through existing portals, or invite users by email',
+        'Access the advanced editor to make content designed specifically for certain types of training',
+        'Monitor user progress, which is kept end-to-end encrypted to comply with health requirements'
       ],
-      description: 'If you\'re going away for a while and won\'t have access to a reliable internet connection, you can pause your Dance Streak while you\'re away for a specified time frame. To prevent abuse, you will also need to explain the reason you need a Streak Pause at time of purchase, which will be reviewed by our support staff to determine if you are eligible.',
-      note: 'Note: Similar to Dance Streak Revivals, our support staff will also give you a Streak Pause at no cost if you experience an unexpected injury that prevents you from playing so you don\'t have to worry about your Dance Streak while you recover!',
-      buttonText: 'Purchase',
+      description: 'Help your employees stay healthy by using DanceAR for Organizations! Promote personal health across your organiaztion by allowing your employees to compete in competitions to stay healthy while having fun!',
+      note: 'DanceAR Health is currently under development, but we would love to know if you\'re interested! Let us know your requirements so we can ensure we have everything you need!',
+      buttonText: 'Contact us',
       buttonVariant: 'outlined' as const,
       isPopular: false
     }
@@ -313,7 +312,19 @@ const PricingOverview = () => {
               fontFamily: 'Space Mono, monospace'
             }}
           >
-            One-time use purchases
+            For Organizations
+          </Typography>
+          <Typography 
+            variant="h6" 
+            align="center" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 6,
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontFamily: 'Inter, sans-serif'
+            }}
+          >
+            (coming soon)
           </Typography>
         </Box>
 
