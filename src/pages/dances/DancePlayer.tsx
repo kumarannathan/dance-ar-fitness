@@ -378,23 +378,53 @@ const DancePlayer = () => {
 
   if (reachedEndOfDance) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            textAlign: 'center'
-          }}>
-            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 1 ? '#ffb330' : 'white'} />
-            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 2 ? '#ffb330' : 'white'} />
-            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 3 ? '#ffb330' : 'white'} />
-            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 4 ? '#ffb330' : 'white'} />
-            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 5 ? '#ffb330' : 'white'} />
-          </div>
-          <Typography>Total Score: {Math.round(totalScore).toLocaleString()}</Typography>
-          <Typography>{trackInfo.title}</Typography>
-          <Typography>{trackInfo.description}</Typography>
-          <Typography>Song: {trackInfo.songAuthor} - {trackInfo.songTitle}</Typography>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Box 
+          sx={{ 
+            maxWidth: 600, 
+            mx: 'auto', 
+            p: 4, 
+            borderRadius: 2, 
+            boxShadow: 3, 
+            bgcolor: 'background.paper' 
+          }}
+        >
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              mb: 2 
+            }}
+          >
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Star 
+                key={i} 
+                fontSize="large" 
+                htmlColor={getReviewStars(totalScore, maxScore) >= i ? '#ffb330' : '#e0e0e0'} 
+              />
+            ))}
+          </Box>
+
+          <Typography variant="h5" align="center" gutterBottom>
+            {trackInfo.title}
+          </Typography>
+
+          <Typography variant="subtitle1" align="center" color="text.secondary" gutterBottom>
+            {trackInfo.description}
+          </Typography>
+
+          <Typography variant="body1" align="center" sx={{ mb: 2 }}>
+            <strong>Song:</strong> {trackInfo.songAuthor} – {trackInfo.songTitle}
+          </Typography>
+
+          <Typography variant="h6" align="center" color="primary">
+            Total Score: {Math.round(totalScore).toLocaleString()}
+          </Typography>
+          <center style={{marginTop: '10px'}}>
+            <Button onClick={() => window.location.href = '/'} variant="outlined">
+              Return Home
+            </Button>
+          </center>
         </Box>
       </Container>
     );

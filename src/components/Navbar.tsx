@@ -218,7 +218,7 @@ const Navbar = () => {
     { text: 'Home', path: '/' },
     { text: 'For You', path: '/fyp' },
     { text: 'Create', path: '/dance/upload' },
-    { text: 'Dance Battle', path: '/dance-battle' },
+    { text: 'Battle', path: '/dance-battle' },
     { text: 'Pricing', path: '/pricing' },
   ];
 
