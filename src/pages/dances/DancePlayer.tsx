@@ -491,7 +491,8 @@ const DancePlayer = () => {
             borderLeft: '5px solid ' + getColorForPresence(framePresence),
             display: loading ? 'none' : 'flex',
             flexDirection: 'column',
-            paddingLeft: 20
+            paddingLeft: 20,
+            zIndex: 4
           }}
         >
           <div style={{
