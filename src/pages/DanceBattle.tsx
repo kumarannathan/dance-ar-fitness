@@ -19,8 +19,11 @@
     CircularProgress,
     Alert,
     Chip,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
   } from '@mui/material';
-  import { Person, EmojiEvents, Close, Send } from '@mui/icons-material';
+  import { Person, EmojiEvents, Close, Send, ExpandMore } from '@mui/icons-material';
   import { motion, AnimatePresence } from 'framer-motion';
   import ReactConfetti from 'react-confetti';
   import styled from '@emotion/styled';
@@ -700,147 +703,299 @@
                 </StyledButton>
               </BattleCard>
             ) : (
-              activeBattles.map((battle) => (
-                <BattleCard key={battle.id}>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography 
-                      variant="h5" 
+              <>
+                {/* Completed Battles Section */}
+                {activeBattles.filter(battle => battle.status === 'complete').length > 0 && (
+                  <Box sx={{ mb: 4 }}>
+                    <Accordion 
                       sx={{ 
-                        color: '#FFFFFF',
-                        mb: 2,
-                        fontFamily: 'Space Mono, monospace',
-                        fontSize: '1rem',
-                        letterSpacing: '0.5px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
+                        bgcolor: 'transparent',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        '&:before': { display: 'none' },
+                        mb: 2
                       }}
                     >
-                      <span>Battle #{battle.id.substring(0, 6)}</span>
-                      <Chip 
-                        label={getBattleStatus(battle)} 
-                        sx={{ 
-                          bgcolor: battle.status === 'complete' ? 
-                            (battle.winner === user?.uid ? 'rgba(0, 255, 0, 0.2)' : 
-                            battle.winner === 'draw' ? 'rgba(255, 255, 0, 0.2)' : 'rgba(255, 0, 0, 0.2)') : 
-                            'rgba(255, 255, 255, 0.1)',
-                          color: '#FFFFFF',
-                          fontFamily: 'Space Mono, monospace',
-                          fontSize: '0.75rem'
-                        }} 
-                      />
-                    </Typography>
-                  </Box>
-                  
-                  <Grid container spacing={3}>
-                    {/* Benchmark Video */}
-                    <Grid item xs={12}>
-                      <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', mb: 2 }}>
-                        <video
-                          src={battle.benchmarkVideoUrl}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
-                          controls
-                        />
-                        <Typography
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            left: 8,
-                            bgcolor: 'rgba(0, 0, 0, 0.8)',
+                      <AccordionSummary
+                        expandIcon={<ExpandMore sx={{ color: '#FFFFFF' }} />}
+                        sx={{
+                          '& .MuiAccordionSummary-content': {
+                            my: 2
+                          }
+                        }}
+                      >
+                        <Typography 
+                          sx={{ 
                             color: '#FFFFFF',
-                            px: 1,
-                            py: 0.5,
-                            borderRadius: 1,
+                            fontFamily: 'Space Mono, monospace',
+                            fontSize: '0.75rem',
+                            letterSpacing: '0.5px',
+                            textTransform: 'uppercase'
                           }}
                         >
-                          Benchmark Video
+                          Completed Battles
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ p: 0 }}>
+                        {activeBattles
+                          .filter(battle => battle.status === 'complete')
+                          .map((battle) => (
+                            <BattleCard key={battle.id}>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography 
+                                  variant="h5" 
+                                  sx={{ 
+                                    color: '#FFFFFF',
+                                    mb: 2,
+                                    fontFamily: 'Space Mono, monospace',
+                                    fontSize: '1rem',
+                                    letterSpacing: '0.5px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                  }}
+                                >
+                                  <span>Battle #{battle.id.substring(0, 6)}</span>
+                                  <Chip 
+                                    label={getBattleStatus(battle)} 
+                                    sx={{ 
+                                      bgcolor: battle.winner === user?.uid ? 'rgba(0, 255, 0, 0.2)' : 
+                                              battle.winner === 'draw' ? 'rgba(255, 255, 0, 0.2)' : 'rgba(255, 0, 0, 0.2)',
+                                      color: '#FFFFFF',
+                                      fontFamily: 'Space Mono, monospace',
+                                      fontSize: '0.75rem'
+                                    }} 
+                                  />
+                                </Typography>
+                              </Box>
+                              
+                              <Grid container spacing={3}>
+                                {/* Benchmark Video */}
+                                <Grid item xs={12}>
+                                  <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', mb: 2 }}>
+                                    <video
+                                      src={battle.benchmarkVideoUrl}
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
+                                      controls
+                                    />
+                                    <Typography
+                                      sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        left: 8,
+                                        bgcolor: 'rgba(0, 0, 0, 0.8)',
+                                        color: '#FFFFFF',
+                                        px: 1,
+                                        py: 0.5,
+                                        borderRadius: 1,
+                                      }}
+                                    >
+                                      Benchmark Video
+                                    </Typography>
+                                  </Box>
+                                </Grid>
+                                
+                                {/* Scores Section */}
+                                <Grid item xs={12}>
+                                  <Grid container spacing={2}>
+                                    {/* Creator's Score */}
+                                    <Grid item xs={6}>
+                                      <Box 
+                                        sx={{ 
+                                          p: 2, 
+                                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                          borderRadius: '4px',
+                                          height: '100%',
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          minHeight: '120px'
+                                        }}
+                                      >
+                                        <Typography sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.875rem' }}>
+                                          {battle.creatorId === user?.uid ? 'Your Score' : 'Creator Score'}
+                                        </Typography>
+                                        <Typography sx={{ color: '#FFFFFF', fontSize: '2rem', fontWeight: 'bold' }}>
+                                          {battle.creatorScore}
+                                        </Typography>
+                                      </Box>
+                                    </Grid>
+                                    
+                                    {/* Challenger's Score */}
+                                    <Grid item xs={6}>
+                                      <Box 
+                                        sx={{ 
+                                          p: 2, 
+                                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                          borderRadius: '4px',
+                                          height: '100%',
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          minHeight: '120px'
+                                        }}
+                                      >
+                                        <Typography sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.875rem' }}>
+                                          {battle.challengerId === user?.uid ? 'Your Score' : 'Challenger Score'}
+                                        </Typography>
+                                        <Typography sx={{ color: '#FFFFFF', fontSize: '2rem', fontWeight: 'bold' }}>
+                                          {battle.challengerScore}
+                                        </Typography>
+                                      </Box>
+                                    </Grid>
+                                  </Grid>
+                                </Grid>
+                              </Grid>
+                            </BattleCard>
+                          ))}
+                      </AccordionDetails>
+                    </Accordion>
+                  </Box>
+                )}
+
+                {/* Active Battles Section */}
+                {activeBattles
+                  .filter(battle => battle.status === 'active')
+                  .map((battle) => (
+                    <BattleCard key={battle.id}>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography 
+                          variant="h5" 
+                          sx={{ 
+                            color: '#FFFFFF',
+                            mb: 2,
+                            fontFamily: 'Space Mono, monospace',
+                            fontSize: '1rem',
+                            letterSpacing: '0.5px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <span>Battle #{battle.id.substring(0, 6)}</span>
+                          <Chip 
+                            label={getBattleStatus(battle)} 
+                            sx={{ 
+                              bgcolor: 'rgba(255, 255, 255, 0.1)',
+                              color: '#FFFFFF',
+                              fontFamily: 'Space Mono, monospace',
+                              fontSize: '0.75rem'
+                            }} 
+                          />
                         </Typography>
                       </Box>
-                    </Grid>
-                    
-                    {/* Scores Section */}
-                    <Grid item xs={12}>
-                      <Grid container spacing={2}>
-                        {/* Creator's Score */}
-                        <Grid item xs={6}>
-                          <Box 
-                            sx={{ 
-                              p: 2, 
-                              bgcolor: 'rgba(255, 255, 255, 0.05)',
-                              borderRadius: '4px',
-                              height: '100%',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              minHeight: '120px'
-                            }}
-                          >
-                            <Typography sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.875rem' }}>
-                              {battle.creatorId === user?.uid ? 'Your Score' : 'Creator Score'}
+                      
+                      <Grid container spacing={3}>
+                        {/* Benchmark Video */}
+                        <Grid item xs={12}>
+                          <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', mb: 2 }}>
+                            <video
+                              src={battle.benchmarkVideoUrl}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
+                              controls
+                            />
+                            <Typography
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                left: 8,
+                                bgcolor: 'rgba(0, 0, 0, 0.8)',
+                                color: '#FFFFFF',
+                                px: 1,
+                                py: 0.5,
+                                borderRadius: 1,
+                              }}
+                            >
+                              Benchmark Video
                             </Typography>
-                            
-                            {battle.creatorScore !== null ? (
-                              <Typography sx={{ color: '#FFFFFF', fontSize: '2rem', fontWeight: 'bold' }}>
-                                {battle.creatorScore}
-                              </Typography>
-                            ) : battle.creatorId === user?.uid && battle.status === 'active' ? (
-                              <UploadButton
-                                variant="contained"
-                                onClick={() => handleUploadDance(battle.id, true)}
-                              >
-                                Upload Your Dance
-                              </UploadButton>
-                            ) : (
-                              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                                Waiting for upload
-                              </Typography>
-                            )}
                           </Box>
                         </Grid>
                         
-                        {/* Challenger's Score */}
-                        <Grid item xs={6}>
-                          <Box 
-                            sx={{ 
-                              p: 2, 
-                              bgcolor: 'rgba(255, 255, 255, 0.05)',
-                              borderRadius: '4px',
-                              height: '100%',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              minHeight: '120px'
-                            }}
-                          >
-                            <Typography sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.875rem' }}>
-                              {battle.challengerId === user?.uid ? 'Your Score' : 'Challenger Score'}
-                            </Typography>
-                            
-                            {battle.challengerScore !== null ? (
-                              <Typography sx={{ color: '#FFFFFF', fontSize: '2rem', fontWeight: 'bold' }}>
-                                {battle.challengerScore}
-                              </Typography>
-                            ) : battle.challengerId === user?.uid && battle.status === 'active' ? (
-                              <UploadButton
-                                variant="contained"
-                                onClick={() => handleUploadDance(battle.id, false)}
+                        {/* Scores Section */}
+                        <Grid item xs={12}>
+                          <Grid container spacing={2}>
+                            {/* Creator's Score */}
+                            <Grid item xs={6}>
+                              <Box 
+                                sx={{ 
+                                  p: 2, 
+                                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                  borderRadius: '4px',
+                                  height: '100%',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '120px'
+                                }}
                               >
-                                Upload Your Dance
-                              </UploadButton>
-                            ) : (
-                              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                                Waiting for upload
-                              </Typography>
-                            )}
-                          </Box>
+                                <Typography sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.875rem' }}>
+                                  {battle.creatorId === user?.uid ? 'Your Score' : 'Creator Score'}
+                                </Typography>
+                                
+                                {battle.creatorScore !== null ? (
+                                  <Typography sx={{ color: '#FFFFFF', fontSize: '2rem', fontWeight: 'bold' }}>
+                                    {battle.creatorScore}
+                                  </Typography>
+                                ) : battle.creatorId === user?.uid ? (
+                                  <UploadButton
+                                    variant="contained"
+                                    onClick={() => handleUploadDance(battle.id, true)}
+                                  >
+                                    Upload Your Dance
+                                  </UploadButton>
+                                ) : (
+                                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                                    Waiting for upload
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Grid>
+                            
+                            {/* Challenger's Score */}
+                            <Grid item xs={6}>
+                              <Box 
+                                sx={{ 
+                                  p: 2, 
+                                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                  borderRadius: '4px',
+                                  height: '100%',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '120px'
+                                }}
+                              >
+                                <Typography sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.875rem' }}>
+                                  {battle.challengerId === user?.uid ? 'Your Score' : 'Challenger Score'}
+                                </Typography>
+                                
+                                {battle.challengerScore !== null ? (
+                                  <Typography sx={{ color: '#FFFFFF', fontSize: '2rem', fontWeight: 'bold' }}>
+                                    {battle.challengerScore}
+                                  </Typography>
+                                ) : battle.challengerId === user?.uid ? (
+                                  <UploadButton
+                                    variant="contained"
+                                    onClick={() => handleUploadDance(battle.id, false)}
+                                  >
+                                    Upload Your Dance
+                                  </UploadButton>
+                                ) : (
+                                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                                    Waiting for upload
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Grid>
+                          </Grid>
                         </Grid>
                       </Grid>
-                    </Grid>
-                  </Grid>
-                </BattleCard>
-              ))
+                    </BattleCard>
+                  ))}
+              </>
             )}
           </Grid>
         </Grid>
