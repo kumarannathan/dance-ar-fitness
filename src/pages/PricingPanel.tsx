@@ -126,7 +126,7 @@ const PricingOverview = () => {
         'Access the advanced editor to make content designed specifically for certain types of training',
         'Monitor user progress, which is kept end-to-end encrypted to comply with health requirements'
       ],
-      description: 'Help your employees stay healthy by using DanceAR for Organizations! Promote personal health across your organiaztion by allowing your employees to compete in competitions to stay healthy while having fun!',
+      description: 'Use DanceAR to help with physical therapy, guided workouts, or ensure users are meeting fitness goals! Allow your patients to use DanceAR to track how they\'re doing and send their progress to you remotely!',
       note: 'DanceAR Health is currently under development, but we would love to know if you\'re interested! Let us know your requirements so we can ensure we have everything you need!',
       buttonText: 'Contact us',
       buttonVariant: 'outlined' as const,
