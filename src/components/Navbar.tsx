@@ -317,7 +317,7 @@ const Navbar = () => {
   );
 
   return (
-    <StyledAppBar position="fixed">
+    <StyledAppBar position="fixed" sx={{zIndex: 2}}>
       <StyledToolbar>
         {/* Left section - Logo */}
         <Box sx={{ width: '200px' }}>

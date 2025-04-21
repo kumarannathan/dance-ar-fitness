@@ -217,7 +217,6 @@ export const isHandsUp = (pose: Landmark[]) => {
 
   for (const requiredJoint of requiredJoints) {
     if (!isJointInFrame(pose[requiredJoint])) {
-      console.log('joint not in frame!');
       return false;
     }
   }

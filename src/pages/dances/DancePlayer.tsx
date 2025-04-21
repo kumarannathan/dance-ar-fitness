@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { FramePresenceType, getPresenceForFrame, gradePose, isHandsUp, ScoringPoseData } from '../../utils/landmark';
@@ -54,6 +54,18 @@ const getScoreData = (ratio: number) => {
   };
 };
 
+const getColorForPresence = (presence: FramePresenceType) => {
+  switch (presence) {
+    case FramePresenceType.OutOfFrame:
+      return '#ff695e';
+    case FramePresenceType.PartialInFrame:
+      return '#ffdd8c';
+    case FramePresenceType.CompleteInFrame:
+      return '#deffb8';
+  }
+  return 'white';
+}
+
 const DancePlayer = () => {
 
   const { danceId } = useParams();
@@ -82,6 +94,9 @@ const DancePlayer = () => {
   const [starting, setStarting] = useState(true);
   const [startingTimeRemaining, setStartingTimeRemaining] = useState(0);
   const [framePresence, setFramePresence] = useState<FramePresenceType>(FramePresenceType.CompleteInFrame);
+  const [totalScore, setTotalScore] = useState(0);
+  const [userMediaStream, setUserMediaStream] = useState<MediaStream|null>(null);
+  const [reachedEndOfDance, setReachedEndOfDance] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -121,8 +136,16 @@ const DancePlayer = () => {
       }
       // we also process the video in mirrored form, which is why this cant just be a simple CSS hack
       cameraLandmarker.detectForVideo(camCanvasRef.current, time, (result) => {
-        if (result.landmarks.length === 0) return;
+        if (result.landmarks.length === 0) {
+          setFramePresence(FramePresenceType.OutOfFrame);
+          return;
+        }
         if (!videoRef.current || !camVideoRef.current) return;
+        if (videoRef.current.ended && videoRef.current.currentTime > 0.1) {
+          setReachedEndOfDance(true);
+          camVideoTime = Infinity;
+          return;
+        }
         if (camVideoTime >= time + 2) return;
         const landmark = result.landmarks[0];
         if (camDebugCanvasRef.current) {
@@ -168,6 +191,7 @@ const DancePlayer = () => {
           const danceEndTime = scoreTimestamp.t + DANCE_SCORING_START_DELAY + DANCE_SCORING_PERIOD;
           if (danceEndTime < videoRef.current.currentTime && danceEndTime + DANCE_SCORING_FEEDBACK_PERIOD > videoRef.current.currentTime) {
             setCurrentScore(scoringStatisticsRef.current[i] / scoreTimestamp.p.map(x => x.i).reduce((a, b) => a + b));
+            setTotalScore(scoringStatisticsRef.current.reduce((a, b) => a + b, 0));
             ++feedbackEligibilityCount;
             continue;
           }
@@ -252,14 +276,22 @@ const DancePlayer = () => {
     }
   }, [debugMode, debugVideoSrc, scoringData.length]);
 
+  // Use another effect to handle end of dance logic, specifically turning off the webcam stream
+  useEffect(() => {
+    if (reachedEndOfDance && userMediaStream) {
+      userMediaStream.getTracks().map(x => x.stop());
+    }
+  }, [reachedEndOfDance, userMediaStream]);
+
   const loadPoseTracking = async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
       video: true
     });
     if (!mediaStream || !camVideoRef.current || !videoRef.current) {
-      alert("must grant camera access!");
+      setHasLoadError(true);
       return;
     }
+    setUserMediaStream(mediaStream);
     camVideoRef.current.srcObject = mediaStream;
 
     const vision = await FilesetResolver.forVisionTasks(
@@ -329,6 +361,14 @@ const DancePlayer = () => {
       loadPoseTracking();
   }
 
+  if (reachedEndOfDance) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* TODO: end of round design here */}
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {loading ? (
@@ -390,7 +430,7 @@ const DancePlayer = () => {
           right: '20px',
           backgroundColor: getScoreData(currentScore).color,
           margin: '10px',
-          zIndex: 3,
+          zIndex: 4,
           padding: '5px 30px',
           borderRadius: 10
         }} hidden={loading}>
@@ -410,7 +450,8 @@ const DancePlayer = () => {
         bottom: '0px',
         right: '0px',
         textAlign: 'center',
-        backgroundColor: '#000000'
+        backgroundColor: '#000000',
+        zIndex: 3
       }} hidden={loading}>
         <video ref={videoRef} height={"100%"} playsInline />
         <canvas
@@ -429,11 +470,17 @@ const DancePlayer = () => {
         top: '20px',
         left: '20px',
         maxWidth: '200px',
-        zIndex: 3
+        zIndex: 5
       }}>
         <video ref={camVideoRef} width={"100%"} playsInline style={{opacity: 0}} />
         <canvas ref={camCanvasRef} height={camVideoRef.current?.clientHeight} width={camVideoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0}}></canvas>
-        <canvas ref={camDebugCanvasRef} height={camVideoRef.current?.clientHeight} width={camVideoRef.current?.clientWidth} style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, zIndex: 2}}></canvas>
+        <canvas
+          ref={camDebugCanvasRef}
+          height={camVideoRef.current?.clientHeight}
+          width={camVideoRef.current?.clientWidth}
+          style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, zIndex: 6}} 
+          hidden={!debugMode && !window.location.hostname.includes('localhost')}
+        ></canvas>
       </div>
       {!starting ? (
         <div
@@ -441,18 +488,26 @@ const DancePlayer = () => {
             position: 'absolute',
             bottom: '20px',
             left: '20px',
-            borderLeft: '5px solid',
+            borderLeft: '5px solid ' + getColorForPresence(framePresence),
             display: loading ? 'none' : 'flex',
             flexDirection: 'column',
             paddingLeft: 20
           }}
         >
           <div style={{
-            fontSize: '1.5em',
+            fontSize: '2.0em',
             fontWeight: 'bolder',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
           }}>
-            {framePresence === FramePresenceType.OutOfFrame ? 'Out of frame!' : (framePresence === FramePresenceType.PartialInFrame) ? 'Partially in frame!' : 'Completely in frame!'}
+            Score: {Math.round(totalScore).toLocaleString()}
+          </div>
+          <div style={{
+            fontSize: '1.5em',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+          }}>
+            {framePresence === FramePresenceType.OutOfFrame ? `We can't see you right now! Try making sure you are in frame!` : 
+              (framePresence === FramePresenceType.PartialInFrame) ? `It looks like you are a little out of frame!` : 
+                `You're in frame!`}
           </div>
         </div>
       ) : ''}
@@ -463,7 +518,7 @@ const DancePlayer = () => {
           left: '0px',
           bottom: '0px',
           right: '0px',
-          zIndex: 2,
+          zIndex: 4,
           backgroundColor: 'rgba(0,0,0,0.5)',
           display: 'flex',
           alignItems: 'center'
