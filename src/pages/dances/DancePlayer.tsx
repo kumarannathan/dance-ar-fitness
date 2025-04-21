@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, 
 import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { FramePresenceType, getPresenceForFrame, gradePose, isHandsUp, ScoringPoseData } from '../../utils/landmark';
-import { UploadFile } from '@mui/icons-material';
+import { Star, UploadFile } from '@mui/icons-material';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -66,6 +66,11 @@ const getColorForPresence = (presence: FramePresenceType) => {
   return 'white';
 }
 
+const getReviewStars = (score: number, maxScore: number) => {
+  const ratio = score / maxScore;
+  return Math.min(Math.floor((ratio ** 3) * 6), 5);
+};
+
 const DancePlayer = () => {
 
   const { danceId } = useParams();
@@ -97,6 +102,16 @@ const DancePlayer = () => {
   const [totalScore, setTotalScore] = useState(0);
   const [userMediaStream, setUserMediaStream] = useState<MediaStream|null>(null);
   const [reachedEndOfDance, setReachedEndOfDance] = useState(false);
+
+  const maxScore = useMemo(() => {
+    let score = 0;
+    for (const a of trackInfo.scoreData) {
+      for (const b of a.p) {
+        score += b.i;
+      }
+    }
+    return score;
+  }, [trackInfo]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -364,7 +379,23 @@ const DancePlayer = () => {
   if (reachedEndOfDance) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* TODO: end of round design here */}
+        <Box>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            textAlign: 'center'
+          }}>
+            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 1 ? '#ffb330' : 'white'} />
+            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 2 ? '#ffb330' : 'white'} />
+            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 3 ? '#ffb330' : 'white'} />
+            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 4 ? '#ffb330' : 'white'} />
+            <Star fontSize={'large'} htmlColor={getReviewStars(totalScore, maxScore) >= 5 ? '#ffb330' : 'white'} />
+          </div>
+          <Typography>Total Score: {Math.round(totalScore).toLocaleString()}</Typography>
+          <Typography>{trackInfo.title}</Typography>
+          <Typography>{trackInfo.description}</Typography>
+          <Typography>Song: {trackInfo.songAuthor} - {trackInfo.songTitle}</Typography>
+        </Box>
       </Container>
     );
   }
