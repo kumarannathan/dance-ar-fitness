@@ -9,7 +9,7 @@ import { db } from '../../firebase';
 import type { FirestoreDanceTrackObject } from '../../types/firestoreDataTypes';
 
 // How many seconds to allow a maximum score to be reached
-const DANCE_SCORING_PERIOD = 0.75;
+const DANCE_SCORING_PERIOD = 1.5;
 // How long to wait until we start the scoring process, this gives the user
 // some time to see the dance move and try to make it on their own. We may want
 // to make this configurable by the user so more advanced dancers don't lose points
